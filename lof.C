@@ -33,7 +33,7 @@ struct point
 const int K = 5;
 
 //The number of points to compute reachability density
-const int MINPTS = 5;
+const int MINPTS = 10;
 
 //Mean and width of 2D Gaussian from which points are sampled
 const float MEAN = 0.0;
@@ -41,7 +41,7 @@ const float SIGMA = 1.0;
 const float SIGMA_OUTLIERS = 4.0;
 
 //Number of points to be generated in the cluster
-const int NPOINTS = 500;
+const int NPOINTS = 80;
 
 //Number of outliers to be generated with 4*sigma
 const int NOUTLIERS = 10;
@@ -74,7 +74,6 @@ void plotLOF()
 		hLOF1D->Fill(lof);
 	}
 
-	//hLOF->Draw("LEGO");
 	TCanvas *c1 = new TCanvas("c1", "c1", 500, 500);
 	hLOF1D->SetTitle("LOF Score Distribution");
 	hLOF1D->GetXaxis()->SetTitle("LOF");
@@ -283,7 +282,7 @@ void generateUniformPoints()
 	//Generate points in cluster
 	for (int i = 0; i < NPOINTS; i++)
 	{
-		float r = rand->Uniform(0.01,3);
+		float r = rand->Uniform(0.0,3);
 		float phi = rand->Uniform(0,2*TMath::Pi());
 
 		point pt;
