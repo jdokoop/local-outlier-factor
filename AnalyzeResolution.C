@@ -51,6 +51,16 @@ TH1F *h_precvtx_diff_x[NCUTS];
 TH1F *h_precvtx_diff_y[NCUTS];
 TH1F *h_precvtx_diff_z[NCUTS];
 
+//Gaussian fits to LOF-pisa vertex distributions
+TF1 *fLOFDiffX[NCUTS];
+TF1 *fLOFDiffY[NCUTS];
+TF1 *fLOFDiffZ[NCUTS];
+
+//Gaussian fits to PREC-pisa vertex distributions
+TF1 *fPRECDiffX[NCUTS];
+TF1 *fPRECDiffY[NCUTS];
+TF1 *fPRECDiffZ[NCUTS];
+
 //Cut on the number of segment variable in ntp_event
 string segmentCut[NCUTS] = {"nseg > 1", "nseg == 2", "nseg == 3", "nseg == 4", "nseg > 4 && nseg <= 8", "nseg >= 9"};
 
@@ -79,7 +89,7 @@ void fitResolutionHistograms()
 		// --> LOF X
 		p0 = h_lofvtx_diff_x[i]->GetMaximum();
 		p1 = h_lofvtx_diff_x[i]->GetBinCenter(h_lofvtx_diff_x[i]->GetMaximumBin());
-		p2 = 0.9 * h_lofvtx_diff_x[i]->GetRMS();
+		p2 = 0.8 * h_lofvtx_diff_x[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -88,11 +98,12 @@ void fitResolutionHistograms()
 		fSignal->SetParameters(p0, p1, p2);
 
 		h_lofvtx_diff_x[i]->Fit(Form("f_lofvtx_diff_x_%i", i), "Q0R");
+		fLOFDiffX[i] = (TF1*) h_lofvtx_diff_x[i]->GetFunction(Form("f_lofvtx_diff_x_%i", i));
 
 		// --> LOF Y
 		p0 = h_lofvtx_diff_y[i]->GetMaximum();
 		p1 = h_lofvtx_diff_y[i]->GetBinCenter(h_lofvtx_diff_y[i]->GetMaximumBin());
-		p2 = 0.9 * h_lofvtx_diff_y[i]->GetRMS();
+		p2 = 0.8 * h_lofvtx_diff_y[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -101,11 +112,12 @@ void fitResolutionHistograms()
 		fSignal->SetParameters(p0, p1, p2);
 
 		h_lofvtx_diff_y[i]->Fit(Form("f_lofvtx_diff_y_%i", i), "Q0R");
+		fLOFDiffY[i] = (TF1*) h_lofvtx_diff_y[i]->GetFunction(Form("f_lofvtx_diff_y_%i", i));
 
 		// --> LOF Z
 		p0 = h_lofvtx_diff_z[i]->GetMaximum();
 		p1 = h_lofvtx_diff_z[i]->GetBinCenter(h_lofvtx_diff_z[i]->GetMaximumBin());
-		p2 = 0.9 * h_lofvtx_diff_z[i]->GetRMS();
+		p2 = 0.8 * h_lofvtx_diff_z[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -114,6 +126,49 @@ void fitResolutionHistograms()
 		fSignal->SetParameters(p0, p1, p2);
 
 		h_lofvtx_diff_z[i]->Fit(Form("f_lofvtx_diff_z_%i", i), "Q0R");
+		fLOFDiffZ[i] = (TF1*) h_lofvtx_diff_z[i]->GetFunction(Form("f_lofvtx_diff_z_%i", i));
+
+		// --> PREC X
+		p0 = h_precvtx_diff_x[i]->GetMaximum();
+		p1 = h_precvtx_diff_x[i]->GetBinCenter(h_precvtx_diff_x[i]->GetMaximumBin());
+		p2 = 0.8 * h_precvtx_diff_x[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_precvtx_diff_x_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_precvtx_diff_x[i]->Fit(Form("f_precvtx_diff_x_%i", i), "Q0R");
+		fPRECDiffX[i] = (TF1*) h_precvtx_diff_x[i]->GetFunction(Form("f_precvtx_diff_x_%i", i));
+
+		// --> PREC Y
+		p0 = h_precvtx_diff_y[i]->GetMaximum();
+		p1 = h_precvtx_diff_y[i]->GetBinCenter(h_precvtx_diff_y[i]->GetMaximumBin());
+		p2 = 0.8 * h_precvtx_diff_y[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_precvtx_diff_y_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_precvtx_diff_y[i]->Fit(Form("f_precvtx_diff_y_%i", i), "Q0R");
+		fPRECDiffY[i] = (TF1*) h_precvtx_diff_y[i]->GetFunction(Form("f_precvtx_diff_y_%i", i));
+
+		// --> PREC Z
+		p0 = h_precvtx_diff_z[i]->GetMaximum();
+		p1 = h_precvtx_diff_z[i]->GetBinCenter(h_precvtx_diff_z[i]->GetMaximumBin());
+		p2 = 0.8 * h_precvtx_diff_z[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_precvtx_diff_z_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_precvtx_diff_z[i]->Fit(Form("f_precvtx_diff_z_%i", i), "Q0R");
+		fPRECDiffZ[i] = (TF1*) h_precvtx_diff_z[i]->GetFunction(Form("f_precvtx_diff_z_%i", i));
 	}
 }
 
@@ -163,8 +218,6 @@ void drawVertexDifferenceDistributions()
 	TLatex *tlatRMSPRECY[NCUTS];
 	TLatex *tlatRMSPRECZ[NCUTS];
 
-	TF1 *fLOFDiff[NCUTS];
-
 	for (int i = 0; i < NCUTS; i++)
 	{
 		cDiff[i] = new TCanvas(Form("c_vertex_%i", i), Form("Vertex Difference %s", segmentCutLabel[i].c_str()), 1100, 500);
@@ -185,31 +238,31 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_x[i]->SetLineColor(kRed);
 		h_precvtx_diff_x[i]->Draw("same");
 
-		fLOFDiff[i] = (TF1*) h_lofvtx_diff_x[i]->GetFunction(Form("f_lofvtx_diff_x_%i", i));
-		fLOFDiff[i]->SetLineColor(kBlack);
-		//fLOFDiff[i]->SetLineWidth(2);
-		fLOFDiff[i]->Draw("same");
-		cout << "LOF RMS " << i << ": " << fLOFDiff[i]->GetParameter(2) << endl;
+		fLOFDiffX[i]->SetLineColor(kBlue);
+		fLOFDiffX[i]->Draw("same");
 
-		tlatMeanLOFX[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", h_lofvtx_diff_x[i]->GetMean()));
+		fPRECDiffX[i]->SetLineColor(kRed);
+		fPRECDiffX[i]->Draw("same");
+
+		tlatMeanLOFX[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffX[i]->GetParameter(1)));
 		tlatMeanLOFX[i]->SetTextColor(kBlue);
 		tlatMeanLOFX[i]->SetTextSize(0.035);
 		tlatMeanLOFX[i]->SetNDC(kTRUE);
 		tlatMeanLOFX[i]->Draw("same");
 
-		tlatMeanPRECX[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", h_precvtx_diff_x[i]->GetMean()));
+		tlatMeanPRECX[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", fPRECDiffX[i]->GetParameter(1)));
 		tlatMeanPRECX[i]->SetTextColor(kRed);
 		tlatMeanPRECX[i]->SetTextSize(0.035);
 		tlatMeanPRECX[i]->SetNDC(kTRUE);
 		tlatMeanPRECX[i]->Draw("same");
 
-		tlatRMSLOFX[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", h_lofvtx_diff_x[i]->GetRMS()));
+		tlatRMSLOFX[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", fLOFDiffX[i]->GetParameter(2)));
 		tlatRMSLOFX[i]->SetTextColor(kBlue);
 		tlatRMSLOFX[i]->SetTextSize(0.035);
 		tlatRMSLOFX[i]->SetNDC(kTRUE);
 		tlatRMSLOFX[i]->Draw("same");
 
-		tlatRMSPRECX[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", h_precvtx_diff_x[i]->GetRMS()));
+		tlatRMSPRECX[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", fPRECDiffX[i]->GetParameter(2)));
 		tlatRMSPRECX[i]->SetTextColor(kRed);
 		tlatRMSPRECX[i]->SetTextSize(0.035);
 		tlatRMSPRECX[i]->SetNDC(kTRUE);
@@ -229,7 +282,7 @@ void drawVertexDifferenceDistributions()
 
 		legDiff[i] = new TLegend(0.6, 0.7, 0.85, 0.8);
 		legDiff[i]->AddEntry(h_lofvtx_diff_x[i], "LOF", "L");
-		legDiff[i]->AddEntry(h_precvtx_diff_x[i], "PRECISE", "L");
+		legDiff[i]->AddEntry(h_precvtx_diff_x[i], "ITERATIVE", "L");
 		legDiff[i]->SetLineColor(kWhite);
 		legDiff[i]->SetTextSize(0.05);
 		legDiff[i]->Draw("same");
@@ -249,25 +302,31 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_y[i]->SetLineColor(kRed);
 		h_precvtx_diff_y[i]->Draw("same");
 
-		tlatMeanLOFY[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", h_lofvtx_diff_y[i]->GetMean()));
+		fLOFDiffY[i]->SetLineColor(kBlue);
+		fLOFDiffY[i]->Draw("same");
+
+		fPRECDiffY[i]->SetLineColor(kRed);
+		fPRECDiffY[i]->Draw("same");
+
+		tlatMeanLOFY[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffY[i]->GetParameter(1)));
 		tlatMeanLOFY[i]->SetTextColor(kBlue);
 		tlatMeanLOFY[i]->SetTextSize(0.035);
 		tlatMeanLOFY[i]->SetNDC(kTRUE);
 		tlatMeanLOFY[i]->Draw("same");
 
-		tlatMeanPRECY[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", h_precvtx_diff_y[i]->GetMean()));
+		tlatMeanPRECY[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", fPRECDiffY[i]->GetParameter(1)));
 		tlatMeanPRECY[i]->SetTextColor(kRed);
 		tlatMeanPRECY[i]->SetTextSize(0.035);
 		tlatMeanPRECY[i]->SetNDC(kTRUE);
 		tlatMeanPRECY[i]->Draw("same");
 
-		tlatRMSLOFY[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", h_lofvtx_diff_y[i]->GetRMS()));
+		tlatRMSLOFY[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", fLOFDiffY[i]->GetParameter(2)));
 		tlatRMSLOFY[i]->SetTextColor(kBlue);
 		tlatRMSLOFY[i]->SetTextSize(0.035);
 		tlatRMSLOFY[i]->SetNDC(kTRUE);
 		tlatRMSLOFY[i]->Draw("same");
 
-		tlatRMSPRECY[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", h_precvtx_diff_y[i]->GetRMS()));
+		tlatRMSPRECY[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", fPRECDiffY[i]->GetParameter(2)));
 		tlatRMSPRECY[i]->SetTextColor(kRed);
 		tlatRMSPRECY[i]->SetTextSize(0.035);
 		tlatRMSPRECY[i]->SetNDC(kTRUE);
@@ -300,25 +359,31 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_z[i]->SetLineColor(kRed);
 		h_precvtx_diff_z[i]->Draw("same");
 
-		tlatMeanLOFZ[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", h_lofvtx_diff_z[i]->GetMean()));
+		fLOFDiffZ[i]->SetLineColor(kBlue);
+		fLOFDiffZ[i]->Draw("same");
+
+		fPRECDiffZ[i]->SetLineColor(kRed);
+		fPRECDiffZ[i]->Draw("same");
+
+		tlatMeanLOFZ[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffZ[i]->GetParameter(1)));
 		tlatMeanLOFZ[i]->SetTextColor(kBlue);
 		tlatMeanLOFZ[i]->SetTextSize(0.035);
 		tlatMeanLOFZ[i]->SetNDC(kTRUE);
 		tlatMeanLOFZ[i]->Draw("same");
 
-		tlatMeanPRECZ[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", h_precvtx_diff_z[i]->GetMean()));
+		tlatMeanPRECZ[i] = new TLatex(0.15, 0.77, Form("Mean = %.3g", fPRECDiffZ[i]->GetParameter(1)));
 		tlatMeanPRECZ[i]->SetTextColor(kRed);
 		tlatMeanPRECZ[i]->SetTextSize(0.035);
 		tlatMeanPRECZ[i]->SetNDC(kTRUE);
 		tlatMeanPRECZ[i]->Draw("same");
 
-		tlatRMSLOFZ[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", h_lofvtx_diff_z[i]->GetRMS()));
+		tlatRMSLOFZ[i] = new TLatex(0.15, 0.6, Form("RMS = %.3g", fLOFDiffZ[i]->GetParameter(2)));
 		tlatRMSLOFZ[i]->SetTextColor(kBlue);
 		tlatRMSLOFZ[i]->SetTextSize(0.035);
 		tlatRMSLOFZ[i]->SetNDC(kTRUE);
 		tlatRMSLOFZ[i]->Draw("same");
 
-		tlatRMSPRECZ[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", h_precvtx_diff_z[i]->GetRMS()));
+		tlatRMSPRECZ[i] = new TLatex(0.15, 0.57, Form("RMS = %.3g", fPRECDiffZ[i]->GetParameter(2)));
 		tlatRMSPRECZ[i]->SetTextColor(kRed);
 		tlatRMSPRECZ[i]->SetTextSize(0.035);
 		tlatRMSPRECZ[i]->SetNDC(kTRUE);
@@ -367,7 +432,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg0_vertex = new TLegend(0.15, 0.7, 0.4, 0.85);
 	leg_nseg0_vertex->AddEntry(h_lofvtx_x[0], "LOF", "L");
-	leg_nseg0_vertex->AddEntry(h_precvtx_x[0], "PRECISE", "L");
+	leg_nseg0_vertex->AddEntry(h_precvtx_x[0], "ITERATIVE", "L");
 	leg_nseg0_vertex->AddEntry(h_pisavtx_x[0], "AMPT", "L");
 	leg_nseg0_vertex->SetLineColor(kWhite);
 	leg_nseg0_vertex->SetTextSize(0.05);
@@ -435,7 +500,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg1_vertex = new TLegend(0.15, 0.7, 0.4, 0.8);
 	leg_nseg1_vertex->AddEntry(h_lofvtx_x[1], "LOF", "L");
-	leg_nseg1_vertex->AddEntry(h_precvtx_x[1], "PRECISE", "L");
+	leg_nseg1_vertex->AddEntry(h_precvtx_x[1], "ITERATIVE", "L");
 	leg_nseg1_vertex->SetLineColor(kWhite);
 	leg_nseg1_vertex->Draw("same");
 
@@ -490,7 +555,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg2_vertex = new TLegend(0.15, 0.7, 0.4, 0.8);
 	leg_nseg2_vertex->AddEntry(h_lofvtx_x[2], "LOF", "L");
-	leg_nseg2_vertex->AddEntry(h_precvtx_x[2], "PRECISE", "L");
+	leg_nseg2_vertex->AddEntry(h_precvtx_x[2], "ITERATIVE", "L");
 	leg_nseg2_vertex->SetLineColor(kWhite);
 	leg_nseg2_vertex->Draw("same");
 
@@ -542,7 +607,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg3_vertex = new TLegend(0.15, 0.7, 0.4, 0.8);
 	leg_nseg3_vertex->AddEntry(h_lofvtx_x[3], "LOF", "L");
-	leg_nseg3_vertex->AddEntry(h_precvtx_x[3], "PRECISE", "L");
+	leg_nseg3_vertex->AddEntry(h_precvtx_x[3], "ITERATIVE", "L");
 	leg_nseg3_vertex->SetLineColor(kWhite);
 	leg_nseg3_vertex->Draw("same");
 
@@ -594,7 +659,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg4_vertex = new TLegend(0.15, 0.7, 0.4, 0.8);
 	leg_nseg4_vertex->AddEntry(h_lofvtx_x[4], "LOF", "L");
-	leg_nseg4_vertex->AddEntry(h_precvtx_x[4], "PRECISE", "L");
+	leg_nseg4_vertex->AddEntry(h_precvtx_x[4], "ITERATIVE", "L");
 	leg_nseg4_vertex->SetLineColor(kWhite);
 	leg_nseg4_vertex->Draw("same");
 
@@ -646,7 +711,7 @@ void drawVertexDistributions()
 
 	TLegend *leg_nseg5_vertex = new TLegend(0.15, 0.7, 0.4, 0.8);
 	leg_nseg5_vertex->AddEntry(h_lofvtx_x[5], "LOF", "L");
-	leg_nseg5_vertex->AddEntry(h_precvtx_x[5], "PRECISE", "L");
+	leg_nseg5_vertex->AddEntry(h_precvtx_x[5], "ITERATIVE", "L");
 	leg_nseg5_vertex->SetLineColor(kWhite);
 	leg_nseg5_vertex->Draw("same");
 
@@ -805,10 +870,107 @@ void drawEventFractionWithVertex()
 
 	TLegend *tlEventFraction = new TLegend(0.6, 0.2, 0.85, 0.4);
 	tlEventFraction->AddEntry(gEventFraction, "LOF", "LP");
-	tlEventFraction->AddEntry(gEventFractionPrec, "PRECISE", "LP");
+	tlEventFraction->AddEntry(gEventFractionPrec, "ITERATIVE", "LP");
 	tlEventFraction->SetLineColor(kWhite);
 	tlEventFraction->SetTextSize(0.05);
 	tlEventFraction->Draw("same");
+}
+
+void drawResolutionSummary()
+{
+	float numSegments[4] = {2, 3, 4, 5};
+	float rmsLOFX[4] = {0};
+	float rmsLOFY[4] = {0};
+	float rmsLOFZ[4] = {0};
+	float rmsPRECX[4] = {0};
+	float rmsPRECY[4] = {0};
+	float rmsPRECZ[4] = {0};
+
+	for (int i = 0; i < 4; i++)
+	{
+		rmsLOFX[i] = fLOFDiffX[i + 1]->GetParameter(2);
+		rmsLOFY[i] = fLOFDiffY[i + 1]->GetParameter(2);
+		rmsLOFZ[i] = fLOFDiffZ[i + 1]->GetParameter(2);
+
+		rmsPRECX[i] = fPRECDiffX[i + 1]->GetParameter(2);
+		rmsPRECY[i] = fPRECDiffY[i + 1]->GetParameter(2);
+		rmsPRECZ[i] = fPRECDiffZ[i + 1]->GetParameter(2);
+	}
+
+	TGraph *gRMSLOFX = new TGraph(4, numSegments, rmsLOFX);
+	TGraph *gRMSLOFY = new TGraph(4, numSegments, rmsLOFY);
+	TGraph *gRMSLOFZ = new TGraph(4, numSegments, rmsLOFZ);
+
+	TGraph *gRMSPRECX = new TGraph(4, numSegments, rmsPRECX);
+	TGraph *gRMSPRECY = new TGraph(4, numSegments, rmsPRECY);
+	TGraph *gRMSPRECZ = new TGraph(4, numSegments, rmsPRECZ);
+
+	TCanvas *cRMS = new TCanvas("cRMS", "cRMS", 1100, 400);
+	cRMS->Divide(3, 1);
+
+	cRMS->cd(1);
+	gRMSLOFX->SetLineColor(kBlue);
+	gRMSLOFX->SetMarkerColor(kBlue);
+	gRMSLOFX->SetMarkerStyle(21);
+	gRMSLOFX->SetTitle("X-RMS");
+	gRMSLOFX->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFX->GetYaxis()->SetTitle("#sigma [cm]");
+	gRMSLOFX->GetXaxis()->SetTitleFont(62);
+	gRMSLOFX->GetXaxis()->SetLabelFont(62);
+	gRMSLOFX->GetYaxis()->SetTitleFont(62);
+	gRMSLOFX->GetYaxis()->SetLabelFont(62);
+	gRMSLOFX->GetYaxis()->SetTitleOffset(1.6);
+	gRMSLOFX->GetYaxis()->SetRangeUser(0, 0.04);
+	gRMSLOFX->Draw("ALP");
+	gRMSPRECX->SetLineColor(kRed);
+	gRMSPRECX->SetMarkerColor(kRed);
+	gRMSPRECX->SetMarkerStyle(21);
+	gRMSPRECX->Draw("LP,same");
+
+	TLegend *legRMS = new TLegend(0.6, 0.7, 0.85, 0.8);
+	legRMS->AddEntry(gRMSLOFX, "LOF", "L");
+	legRMS->AddEntry(gRMSPRECX, "ITERATIVE", "L");
+	legRMS->SetLineColor(kWhite);
+	legRMS->SetTextSize(0.05);
+	legRMS->Draw("same");
+
+	cRMS->cd(2);
+	gRMSLOFY->SetLineColor(kBlue);
+	gRMSLOFY->SetMarkerColor(kBlue);
+	gRMSLOFY->SetMarkerStyle(21);
+	gRMSLOFY->SetTitle("Y-RMS");
+	gRMSLOFY->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFY->GetYaxis()->SetTitle("#sigma [cm]");
+	gRMSLOFY->GetXaxis()->SetTitleFont(62);
+	gRMSLOFY->GetXaxis()->SetLabelFont(62);
+	gRMSLOFY->GetYaxis()->SetTitleFont(62);
+	gRMSLOFY->GetYaxis()->SetLabelFont(62);
+	gRMSLOFY->GetYaxis()->SetTitleOffset(1.6);
+	gRMSLOFY->GetYaxis()->SetRangeUser(0, 0.04);
+	gRMSLOFY->Draw("ALP");
+	gRMSPRECY->SetLineColor(kRed);
+	gRMSPRECY->SetMarkerColor(kRed);
+	gRMSPRECY->SetMarkerStyle(21);
+	gRMSPRECY->Draw("LP,same");
+
+	cRMS->cd(3);
+	gRMSLOFZ->SetLineColor(kBlue);
+	gRMSLOFZ->SetMarkerColor(kBlue);
+	gRMSLOFZ->SetMarkerStyle(21);
+	gRMSLOFZ->SetTitle("Z-RMS");
+	gRMSLOFZ->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFZ->GetYaxis()->SetTitle("#sigma [cm]");
+	gRMSLOFZ->GetXaxis()->SetTitleFont(62);
+	gRMSLOFZ->GetXaxis()->SetLabelFont(62);
+	gRMSLOFZ->GetYaxis()->SetTitleFont(62);
+	gRMSLOFZ->GetYaxis()->SetLabelFont(62);
+	gRMSLOFZ->GetYaxis()->SetTitleOffset(1.6);
+	gRMSLOFZ->GetYaxis()->SetRangeUser(0, 0.04);
+	gRMSLOFZ->Draw("ALP");
+	gRMSPRECZ->SetLineColor(kRed);
+	gRMSPRECZ->SetMarkerColor(kRed);
+	gRMSPRECZ->SetMarkerStyle(21);
+	gRMSPRECZ->Draw("LP,same");
 }
 
 void AnalyzeResolution()
@@ -822,5 +984,5 @@ void AnalyzeResolution()
 	fitResolutionHistograms();
 	//drawVertexDistributions();
 	drawVertexDifferenceDistributions();
-	drawEventFractionWithVertex();
+	drawResolutionSummary();
 }
