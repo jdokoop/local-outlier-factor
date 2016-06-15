@@ -67,6 +67,71 @@ string cutvtxPRECy = "TRUE";//"vtx_prec[1] > -0.025 && vtx_prec[1] < 0.2";
 // Functions
 //--------------------------------------------
 
+void fitResolutionHistograms()
+{
+	//Fit the difference between the reconstructed and the pisa vertices with a Gaussian
+	double r1, r2;
+	double p0, p1, p2;
+	TF1 *fSignal;
+
+	for (int i = 0; i < NCUTS; i++)
+	{
+		// --> LOF X
+		p0 = h_lofvtx_diff_x[i]->GetMaximum();
+		p1 = h_lofvtx_diff_x[i]->GetBinCenter(h_lofvtx_diff_x[i]->GetMaximumBin());
+		p2 = 0.9 * h_lofvtx_diff_x[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_lofvtx_diff_x_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_lofvtx_diff_x[i]->Fit(Form("f_lofvtx_diff_x_%i", i), "Q0R");
+
+		// --> LOF Y
+		p0 = h_lofvtx_diff_y[i]->GetMaximum();
+		p1 = h_lofvtx_diff_y[i]->GetBinCenter(h_lofvtx_diff_y[i]->GetMaximumBin());
+		p2 = 0.9 * h_lofvtx_diff_y[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_lofvtx_diff_y_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_lofvtx_diff_y[i]->Fit(Form("f_lofvtx_diff_y_%i", i), "Q0R");
+
+		// --> LOF Z
+		p0 = h_lofvtx_diff_z[i]->GetMaximum();
+		p1 = h_lofvtx_diff_z[i]->GetBinCenter(h_lofvtx_diff_z[i]->GetMaximumBin());
+		p2 = 0.9 * h_lofvtx_diff_z[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		fSignal = new TF1(Form("f_lofvtx_diff_z_%i", i), "gaus", r1, r2);
+		fSignal->SetParameters(p0, p1, p2);
+
+		h_lofvtx_diff_z[i]->Fit(Form("f_lofvtx_diff_z_%i", i), "Q0R");
+	}
+}
+
+void normalizeHistograms()
+{
+	for (int i = 0; i < NCUTS; i++)
+	{
+		h_lofvtx_diff_x[i]->Scale(1.0 / h_lofvtx_diff_x[i]->GetMaximum());//h_lofvtx_diff_x[i]->Integral());
+		h_precvtx_diff_x[i]->Scale(1.0 / h_precvtx_diff_x[i]->GetMaximum());//h_precvtx_diff_x[i]->Integral());
+
+		h_lofvtx_diff_y[i]->Scale(1.0 / h_lofvtx_diff_y[i]->GetMaximum());//h_lofvtx_diff_y[i]->Integral());
+		h_precvtx_diff_y[i]->Scale(1.0 / h_precvtx_diff_y[i]->GetMaximum());//h_precvtx_diff_y[i]->Integral());
+
+		h_lofvtx_diff_z[i]->Scale(1.0 / h_lofvtx_diff_z[i]->GetMaximum());//h_lofvtx_diff_z[i]->Integral());
+		h_precvtx_diff_z[i]->Scale(1.0 / h_precvtx_diff_z[i]->GetMaximum());//h_precvtx_diff_z[i]->Integral());
+	}
+}
+
 void drawVertexDifferenceDistributions()
 {
 	gStyle->SetOptStat(0);
@@ -98,20 +163,20 @@ void drawVertexDifferenceDistributions()
 	TLatex *tlatRMSPRECY[NCUTS];
 	TLatex *tlatRMSPRECZ[NCUTS];
 
+	TF1 *fLOFDiff[NCUTS];
+
 	for (int i = 0; i < NCUTS; i++)
 	{
 		cDiff[i] = new TCanvas(Form("c_vertex_%i", i), Form("Vertex Difference %s", segmentCutLabel[i].c_str()), 1100, 500);
 
 		cDiff[i]->Divide(3, 1);
 		cDiff[i]->cd(1);
-		gPad->SetLogy();
-
-		h_lofvtx_diff_x[i]->Scale(1.0 / h_lofvtx_diff_x[i]->Integral());
-		h_precvtx_diff_x[i]->Scale(1.0 / h_precvtx_diff_x[i]->Integral());
+		//gPad->SetLogy();
 
 		h_lofvtx_diff_x[i]->GetXaxis()->SetTitle("(reco - pisa)_x [cm]");
 		h_lofvtx_diff_x[i]->GetXaxis()->SetTitleFont(62);
 		h_lofvtx_diff_x[i]->GetXaxis()->SetLabelFont(62);
+		h_lofvtx_diff_x[i]->GetYaxis()->SetRangeUser(0, 1.2);
 		h_lofvtx_diff_x[i]->GetYaxis()->SetTitle("AU");
 		h_lofvtx_diff_x[i]->GetYaxis()->SetTitleFont(62);
 		h_lofvtx_diff_x[i]->GetYaxis()->SetLabelFont(62);
@@ -119,6 +184,12 @@ void drawVertexDifferenceDistributions()
 		h_lofvtx_diff_x[i]->SetTitle("");
 		h_precvtx_diff_x[i]->SetLineColor(kRed);
 		h_precvtx_diff_x[i]->Draw("same");
+
+		fLOFDiff[i] = (TF1*) h_lofvtx_diff_x[i]->GetFunction(Form("f_lofvtx_diff_x_%i", i));
+		fLOFDiff[i]->SetLineColor(kBlack);
+		//fLOFDiff[i]->SetLineWidth(2);
+		fLOFDiff[i]->Draw("same");
+		cout << "LOF RMS " << i << ": " << fLOFDiff[i]->GetParameter(2) << endl;
 
 		tlatMeanLOFX[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", h_lofvtx_diff_x[i]->GetMean()));
 		tlatMeanLOFX[i]->SetTextColor(kBlue);
@@ -164,14 +235,12 @@ void drawVertexDifferenceDistributions()
 		legDiff[i]->Draw("same");
 
 		cDiff[i]->cd(2);
-		gPad->SetLogy();
-
-		h_lofvtx_diff_y[i]->Scale(1.0 / h_lofvtx_diff_y[i]->Integral());
-		h_precvtx_diff_y[i]->Scale(1.0 / h_precvtx_diff_y[i]->Integral());
+		//gPad->SetLogy();
 
 		h_lofvtx_diff_y[i]->GetXaxis()->SetTitle("(reco - pisa)_y [cm]");
 		h_lofvtx_diff_y[i]->GetXaxis()->SetTitleFont(62);
 		h_lofvtx_diff_y[i]->GetXaxis()->SetLabelFont(62);
+		h_lofvtx_diff_y[i]->GetYaxis()->SetRangeUser(0, 1.2);
 		h_lofvtx_diff_y[i]->GetYaxis()->SetTitle("AU");
 		h_lofvtx_diff_y[i]->GetYaxis()->SetTitleFont(62);
 		h_lofvtx_diff_y[i]->GetYaxis()->SetLabelFont(62);
@@ -217,14 +286,12 @@ void drawVertexDifferenceDistributions()
 		tlatFracPRECX[i]->Draw("same");
 
 		cDiff[i]->cd(3);
-		gPad->SetLogy();
-
-		h_lofvtx_diff_z[i]->Scale(1.0 / h_lofvtx_diff_z[i]->Integral());
-		h_precvtx_diff_z[i]->Scale(1.0 / h_precvtx_diff_z[i]->Integral());
+		//gPad->SetLogy();
 
 		h_lofvtx_diff_z[i]->GetXaxis()->SetTitle("(reco - pisa)_z [cm]");
 		h_lofvtx_diff_z[i]->GetXaxis()->SetTitleFont(62);
 		h_lofvtx_diff_z[i]->GetXaxis()->SetLabelFont(62);
+		h_lofvtx_diff_z[i]->GetYaxis()->SetRangeUser(0, 1.2);
 		h_lofvtx_diff_z[i]->GetYaxis()->SetTitle("AU");
 		h_lofvtx_diff_z[i]->GetYaxis()->SetTitleFont(62);
 		h_lofvtx_diff_z[i]->GetYaxis()->SetLabelFont(62);
@@ -667,15 +734,6 @@ void getVertexDistributions()
 		ntp_event->Draw(Form("vtx_prec[2]-vtx_pisa[2]>>h_precvtx_diff_z_%i(200,-0.2,0.2)", i), segmentCut[i].c_str(), "goff");
 		h_precvtx_diff_z[i] = (TH1F*) gDirectory->FindObject(Form("h_precvtx_diff_z_%i", i));
 	}
-
-	/*
-		TF1 *fit = new TF1("fit","gaus",(h_precvtx_x[0]->GetBinCenter(h_precvtx_x[0]->GetMaximumBin()))-0.4*h_precvtx_x[0]->GetRMS(),((h_precvtx_x[0]->GetBinCenter(h_precvtx_x[0]->GetMaximumBin()))+0.4*h_precvtx_x[0]->GetRMS()));
-		fit->SetParameter(0,h_precvtx_x[0]->GetMaximum());
-		fit->SetParameter(1,h_precvtx_x[0]->GetBinCenter(h_precvtx_x[0]->GetMaximumBin()));
-		fit->SetParameter(2,h_precvtx_x[0]->GetRMS());
-		h_precvtx_x[0]->Fit(fit,"R");
-		h_precvtx_x[0]->Draw();
-		*/
 }
 
 void getEventFractionNarrowVtx()
@@ -760,7 +818,8 @@ void AnalyzeResolution()
 	ntp_event  = (TTree*) fin->Get("ntp_event");
 
 	getVertexDistributions();
-	//getEventFractionNarrowVtx();
+	normalizeHistograms();
+	fitResolutionHistograms();
 	//drawVertexDistributions();
 	drawVertexDifferenceDistributions();
 	drawEventFractionWithVertex();
