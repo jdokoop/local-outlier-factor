@@ -46,22 +46,31 @@ TH1F *h_ew_lof_y[NUMSEG];
 TH1F *h_ew_lof_z[NUMSEG];
 
 //Fit functions for each vertex and vertex difference as a function of the number of tracks
-TF1 *f_gauss_fits_vtx_x[NUMSEG];
-TF1 *f_gauss_fits_vtx_y[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_x[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_y[NUMSEG];
 
-TF1 *f_gauss_fits_diff_x[NUMSEG];
-TF1 *f_gauss_fits_diff_y[NUMSEG];
-TF1 *f_gauss_fits_diff_z[NUMSEG];
+TF1 *f_gauss_fits_diff_prec_x[NUMSEG];
+TF1 *f_gauss_fits_diff_prec_y[NUMSEG];
+TF1 *f_gauss_fits_diff_prec_z[NUMSEG];
 
 //Resolution
-float resol[NUMSEG] = {0};
+float resol_lof[NUMSEG] = {0};
+float resol_prec[NUMSEG] = {0};
 
 //Beam spot size
-float bspt[NUMSEG] = {0};
+float bspt_lof[NUMSEG] = {0};
+float bspt_prec[NUMSEG] = {0};
 
 //----------------------------------
 // Functions
 //----------------------------------
+
+void calculateResolution()
+{
+	for(int i=0; i<NUMSEG; i++)
+	{
+	}
+}
 
 void plotHistograms()
 {
@@ -83,7 +92,7 @@ void plotHistograms()
 		h_prec_x[i]->GetYaxis()->SetLabelFont(62);
 		h_prec_x[i]->GetYaxis()->SetTitleFont(62);
 		h_prec_x[i]->Draw();
-		f_gauss_fits_vtx_x[i]->Draw("same");
+		f_gauss_fits_vtx_prec_x[i]->Draw("same");
 
 		cVertex[i]->cd(2);
 		h_prec_y[i]->SetTitle("");
@@ -93,7 +102,7 @@ void plotHistograms()
 		h_prec_y[i]->GetYaxis()->SetLabelFont(62);
 		h_prec_y[i]->GetYaxis()->SetTitleFont(62);
 		h_prec_y[i]->Draw();
-		f_gauss_fits_vtx_y[i]->Draw("same");
+		f_gauss_fits_vtx_prec_y[i]->Draw("same");
 
 		cVertex[i]->cd(3);
 		h_prec_z[i]->SetTitle("");
@@ -120,7 +129,7 @@ void plotHistograms()
 		h_ew_prec_x[i]->GetYaxis()->SetLabelFont(62);
 		h_ew_prec_x[i]->GetYaxis()->SetTitleFont(62);
 		h_ew_prec_x[i]->Draw();
-		f_gauss_fits_diff_x[i]->Draw("same");
+		f_gauss_fits_diff_prec_x[i]->Draw("same");
 
 		cVertexDiff[i]->cd(2);
 		h_ew_prec_y[i]->SetTitle("");
@@ -130,7 +139,7 @@ void plotHistograms()
 		h_ew_prec_y[i]->GetYaxis()->SetLabelFont(62);
 		h_ew_prec_y[i]->GetYaxis()->SetTitleFont(62);
 		h_ew_prec_y[i]->Draw();
-		f_gauss_fits_diff_y[i]->Draw("same");
+		f_gauss_fits_diff_prec_y[i]->Draw("same");
 
 		cVertexDiff[i]->cd(3);
 		h_ew_prec_z[i]->SetTitle("");
@@ -140,7 +149,7 @@ void plotHistograms()
 		h_ew_prec_z[i]->GetYaxis()->SetLabelFont(62);
 		h_ew_prec_z[i]->GetYaxis()->SetTitleFont(62);
 		h_ew_prec_z[i]->Draw();
-		f_gauss_fits_diff_z[i]->Draw("same");
+		f_gauss_fits_diff_prec_z[i]->Draw("same");
 	}
 }
 
@@ -160,8 +169,8 @@ void fitHistograms()
 		r1 = p1 - p2;
 		r2 = p1 + p2;
 
-		f_gauss_fits_vtx_x[i] = new TF1(Form("f_prec_x_%i", i), "gaus", r1, r2);
-		f_gauss_fits_vtx_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_x[i] = new TF1(Form("f_prec_x_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_x[i]->SetParameters(p0, p1, p2);
 
 		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
 
@@ -173,8 +182,8 @@ void fitHistograms()
 		r1 = p1 - p2;
 		r2 = p1 + p2;
 
-		f_gauss_fits_vtx_y[i] = new TF1(Form("f_prec_y_%i", i), "gaus", r1, r2);
-		f_gauss_fits_vtx_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_y[i] = new TF1(Form("f_prec_y_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_y[i]->SetParameters(p0, p1, p2);
 
 		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
 
@@ -186,8 +195,8 @@ void fitHistograms()
 		r1 = p1 - p2;
 		r2 = p1 + p2;
 
-		f_gauss_fits_diff_x[i] = new TF1(Form("f_ew_prec_x_%i", i), "gaus", r1, r2);
-		f_gauss_fits_diff_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_x[i] = new TF1(Form("f_ew_prec_x_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_prec_x[i]->SetParameters(p0, p1, p2);
 
 		h_ew_prec_x[i]->Fit(Form("f_ew_prec_x_%i", i), "Q0R");
 
@@ -199,8 +208,8 @@ void fitHistograms()
 		r1 = p1 - p2;
 		r2 = p1 + p2;
 
-		f_gauss_fits_diff_y[i] = new TF1(Form("f_ew_prec_y_%i", i), "gaus", r1, r2);
-		f_gauss_fits_diff_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_y[i] = new TF1(Form("f_ew_prec_y_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_prec_y[i]->SetParameters(p0, p1, p2);
 
 		h_ew_prec_y[i]->Fit(Form("f_ew_prec_y_%i", i), "Q0R");
 
@@ -212,8 +221,8 @@ void fitHistograms()
 		r1 = p1 - p2;
 		r2 = p1 + p2;
 
-		f_gauss_fits_diff_z[i] = new TF1(Form("f_ew_prec_z_%i", i), "gaus", r1, r2);
-		f_gauss_fits_diff_z[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_z[i] = new TF1(Form("f_ew_prec_z_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_prec_z[i]->SetParameters(p0, p1, p2);
 
 		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
 	}
