@@ -89,6 +89,12 @@ void calculateResolution()
 
 		bspt_prec[0][i] = TMath::Sqrt((f_gauss_fits_vtx_prec_x[i]->GetParameter(2)) * (f_gauss_fits_vtx_prec_x[i]->GetParameter(2)) - resol_prec[0][i] * resol_prec[0][i] );
 		bspt_prec[1][i] = TMath::Sqrt((f_gauss_fits_vtx_prec_y[i]->GetParameter(2)) * (f_gauss_fits_vtx_prec_y[i]->GetParameter(2)) - resol_prec[1][i] * resol_prec[1][i] );
+
+		resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
+		resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
+
+		bspt_lof[0][i] = TMath::Sqrt((f_gauss_fits_vtx_lof_x[i]->GetParameter(2)) * (f_gauss_fits_vtx_lof_x[i]->GetParameter(2)) - resol_lof[0][i] * resol_lof[0][i] );
+		bspt_lof[1][i] = TMath::Sqrt((f_gauss_fits_vtx_lof_y[i]->GetParameter(2)) * (f_gauss_fits_vtx_lof_y[i]->GetParameter(2)) - resol_lof[1][i] * resol_lof[1][i] );
 	}
 }
 
@@ -245,6 +251,71 @@ void fitHistograms()
 		f_gauss_fits_diff_prec_z[i]->SetParameters(p0, p1, p2);
 
 		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
+
+		// --> LOF X
+		p0 = h_lof_x[i]->GetMaximum();
+		p1 = h_lof_x[i]->GetBinCenter(h_lof_x[i]->GetMaximumBin());
+		p2 = 0.5 * h_lof_x[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x[i] = new TF1(Form("f_lof_x_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_x[i]->SetParameters(p0, p1, p2);
+
+		h_lof_x[i]->Fit(Form("f_lof_x_%i", i), "Q0R");
+
+		// --> LOF Y
+		p0 = h_lof_y[i]->GetMaximum();
+		p1 = h_lof_y[i]->GetBinCenter(h_lof_y[i]->GetMaximumBin());
+		p2 = 0.5 * h_lof_y[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y[i] = new TF1(Form("f_lof_y_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_y[i]->SetParameters(p0, p1, p2);
+
+		h_lof_y[i]->Fit(Form("f_lof_y_%i", i), "Q0R");
+
+		// --> LOF E-W X
+		p0 = h_ew_lof_x[i]->GetMaximum();
+		p1 = h_ew_lof_x[i]->GetBinCenter(h_ew_lof_x[i]->GetMaximumBin());
+		p2 = 0.6 * h_ew_lof_x[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_x[i] = new TF1(Form("f_ew_lof_x_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_lof_x[i]->SetParameters(p0, p1, p2);
+
+		h_ew_lof_x[i]->Fit(Form("f_ew_lof_x_%i", i), "Q0R");
+
+		// --> LOF E-W Y
+		p0 = h_ew_lof_y[i]->GetMaximum();
+		p1 = h_ew_lof_y[i]->GetBinCenter(h_ew_lof_y[i]->GetMaximumBin());
+		p2 = 0.6 * h_ew_lof_y[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_y[i] = new TF1(Form("f_ew_lof_y_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_lof_y[i]->SetParameters(p0, p1, p2);
+
+		h_ew_lof_y[i]->Fit(Form("f_ew_lof_y_%i", i), "Q0R");
+
+		// --> LOF E-W Z
+		p0 = h_ew_lof_z[i]->GetMaximum();
+		p1 = h_ew_lof_z[i]->GetBinCenter(h_ew_lof_z[i]->GetMaximumBin());
+		p2 = 0.6 * h_ew_lof_z[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_z[i] = new TF1(Form("f_ew_lof_z_%i", i), "gaus", r1, r2);
+		f_gauss_fits_diff_lof_z[i]->SetParameters(p0, p1, p2);
+
+		h_ew_lof_z[i]->Fit(Form("f_ew_lof_z_%i", i), "Q0R");
 	}
 }
 
@@ -302,31 +373,88 @@ void plotResolution()
 	float resol_prec_x[NUMSEG];
 	float resol_prec_y[NUMSEG];
 
+	float resol_lof_x[NUMSEG];
+	float resol_lof_y[NUMSEG];
+
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		resol_prec_x[i] = resol_prec[0][i];
 		resol_prec_y[i] = resol_prec[1][i];
+
+		resol_lof_x[i] = resol_lof[0][i];
+		resol_lof_y[i] = resol_lof[1][i];
 	}
 
 	g_resol_prec_x = new TGraph(NUMSEG, x, resol_prec_x);
 	g_resol_prec_y = new TGraph(NUMSEG, x, resol_prec_y);
 
-	TCanvas *cResolPrec = new TCanvas("cResolPrec", "cResolPrec", 600, 600);
+	g_resol_lof_x = new TGraph(NUMSEG, x, resol_lof_x);
+	g_resol_lof_y = new TGraph(NUMSEG, x, resol_lof_y);
+
+	TCanvas *cResol = new TCanvas("cResol", "cResol", 900, 500);
+	cResol->Divide(2, 1);
+	cResol->cd(1);
+	gPad->SetGridy();
 	g_resol_prec_x->SetTitle("ITERATIVE");
 	g_resol_prec_x->SetMarkerStyle(20);
-	g_resol_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks");
+	g_resol_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_resol_prec_x->GetXaxis()->SetTitleFont(62);
 	g_resol_prec_x->GetXaxis()->SetLabelFont(62);
 	g_resol_prec_x->GetYaxis()->SetTitle("#sigma_{resolution} [cm]");
+	g_resol_prec_x->GetYaxis()->SetTitleOffset(1.85);
+	g_resol_prec_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_resol_prec_x->GetYaxis()->SetTitleFont(62);
 	g_resol_prec_x->GetYaxis()->SetLabelFont(62);
-
 	g_resol_prec_x->Draw("ALP");
-
 	g_resol_prec_y->SetMarkerStyle(20);
 	g_resol_prec_y->SetLineColor(kBlue);
 	g_resol_prec_y->SetMarkerColor(kBlue);
 	g_resol_prec_y->Draw("LP,same");
+
+	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(1), "ANY");
+	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(2), "2");
+	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(3), "3");
+	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(4), "4");
+
+	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(1), "ANY");
+	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(2), "2");
+	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(3), "3");
+	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(4), "4");
+
+	TLegend *tlg_resol_prec = new TLegend(0.6, 0.2, 0.85, 0.3);
+	tlg_resol_prec->AddEntry(g_resol_prec_x, "X-Vertex", "LP");
+	tlg_resol_prec->AddEntry(g_resol_prec_y, "Y-Vertex", "LP");
+	tlg_resol_prec->SetLineColor(kWhite);
+	tlg_resol_prec->SetTextSize(0.05);
+	tlg_resol_prec->Draw("same");
+
+	cResol->cd(2);
+	gPad->SetGridy();
+	g_resol_lof_x->SetTitle("LOF");
+	g_resol_lof_x->SetMarkerStyle(20);
+	g_resol_lof_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
+	g_resol_lof_x->GetXaxis()->SetTitleFont(62);
+	g_resol_lof_x->GetXaxis()->SetLabelFont(62);
+	g_resol_lof_x->GetYaxis()->SetTitle("#sigma_{resolution} [cm]");
+	g_resol_lof_x->GetYaxis()->SetTitleOffset(1.85);
+	g_resol_lof_x->GetYaxis()->SetRangeUser(0, 0.025);
+	g_resol_lof_x->GetYaxis()->SetTitleFont(62);
+	g_resol_lof_x->GetYaxis()->SetLabelFont(62);
+	g_resol_lof_x->Draw("ALP");
+	g_resol_lof_y->SetMarkerStyle(20);
+	g_resol_lof_y->SetLineColor(kBlue);
+	g_resol_lof_y->SetMarkerColor(kBlue);
+	g_resol_lof_y->Draw("LP,same");
+
+	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(1), "ANY");
+	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(2), "2");
+	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(3), "3");
+	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(4), "4");
+
+	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(1), "ANY");
+	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(2), "2");
+	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(3), "3");
+	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(4), "4");
 }
 
 void ComputeBeamSpot()
