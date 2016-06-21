@@ -49,17 +49,32 @@ TH1F *h_ew_lof_z[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_x[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_y[NUMSEG];
 
+TF1 *f_gauss_fits_vtx_lof_x[NUMSEG];
+TF1 *f_gauss_fits_vtx_lof_y[NUMSEG];
+
 TF1 *f_gauss_fits_diff_prec_x[NUMSEG];
 TF1 *f_gauss_fits_diff_prec_y[NUMSEG];
 TF1 *f_gauss_fits_diff_prec_z[NUMSEG];
 
+TF1 *f_gauss_fits_diff_lof_x[NUMSEG];
+TF1 *f_gauss_fits_diff_lof_y[NUMSEG];
+TF1 *f_gauss_fits_diff_lof_z[NUMSEG];
+
 //Resolution
-float resol_lof[NUMSEG] = {0};
-float resol_prec[NUMSEG] = {0};
+float resol_lof[2][NUMSEG] = {0};
+float resol_prec[2][NUMSEG] = {0};
+TGraph *g_resol_prec_x;
+TGraph *g_resol_prec_y;
+TGraph *g_bspt_prec_x;
+TGraph *g_bspt_prec_y;
 
 //Beam spot size
-float bspt_lof[NUMSEG] = {0};
-float bspt_prec[NUMSEG] = {0};
+float bspt_lof[2][NUMSEG] = {0};
+float bspt_prec[2][NUMSEG] = {0};
+TGraph *g_resol_lof_x;
+TGraph *g_resol_lof_y;
+TGraph *g_bspt_lof_x;
+TGraph *g_bspt_lof_y;
 
 //----------------------------------
 // Functions
@@ -67,8 +82,13 @@ float bspt_prec[NUMSEG] = {0};
 
 void calculateResolution()
 {
-	for(int i=0; i<NUMSEG; i++)
+	for (int i = 0; i < NUMSEG; i++)
 	{
+		resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
+		resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
+
+		bspt_prec[0][i] = TMath::Sqrt((f_gauss_fits_vtx_prec_x[i]->GetParameter(2)) * (f_gauss_fits_vtx_prec_x[i]->GetParameter(2)) - resol_prec[0][i] * resol_prec[0][i] );
+		bspt_prec[1][i] = TMath::Sqrt((f_gauss_fits_vtx_prec_y[i]->GetParameter(2)) * (f_gauss_fits_vtx_prec_y[i]->GetParameter(2)) - resol_prec[1][i] * resol_prec[1][i] );
 	}
 }
 
@@ -275,9 +295,45 @@ void readHistograms()
 	}
 }
 
+void plotResolution()
+{
+	float x[NUMSEG] = {1, 2, 3, 4};
+
+	float resol_prec_x[NUMSEG];
+	float resol_prec_y[NUMSEG];
+
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		resol_prec_x[i] = resol_prec[0][i];
+		resol_prec_y[i] = resol_prec[1][i];
+	}
+
+	g_resol_prec_x = new TGraph(NUMSEG, x, resol_prec_x);
+	g_resol_prec_y = new TGraph(NUMSEG, x, resol_prec_y);
+
+	TCanvas *cResolPrec = new TCanvas("cResolPrec", "cResolPrec", 600, 600);
+	g_resol_prec_x->SetTitle("ITERATIVE");
+	g_resol_prec_x->SetMarkerStyle(20);
+	g_resol_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks");
+	g_resol_prec_x->GetXaxis()->SetTitleFont(62);
+	g_resol_prec_x->GetXaxis()->SetLabelFont(62);
+	g_resol_prec_x->GetYaxis()->SetTitle("#sigma_{resolution} [cm]");
+	g_resol_prec_x->GetYaxis()->SetTitleFont(62);
+	g_resol_prec_x->GetYaxis()->SetLabelFont(62);
+
+	g_resol_prec_x->Draw("ALP");
+
+	g_resol_prec_y->SetMarkerStyle(20);
+	g_resol_prec_y->SetLineColor(kBlue);
+	g_resol_prec_y->SetMarkerColor(kBlue);
+	g_resol_prec_y->Draw("LP,same");
+}
+
 void ComputeBeamSpot()
 {
 	readHistograms();
 	fitHistograms();
+	calculateResolution();
 	plotHistograms();
+	plotResolution();
 }
