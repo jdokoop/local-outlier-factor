@@ -62,10 +62,12 @@ TF1 *fPRECDiffY[NCUTS];
 TF1 *fPRECDiffZ[NCUTS];
 
 //Cut on the number of segment variable in ntp_event
-string segmentCut[NCUTS] = {"nseg > 1", "nseg == 2", "nseg == 3", "nseg == 4", "nseg > 4 && nseg <= 8", "nseg >= 9"};
+//string segmentCut[NCUTS] = {"nseg > 1", "nseg == 2", "nseg == 3", "nseg == 4", "nseg > 4 && nseg <= 8", "nseg >= 9"};
+string segmentCut[NCUTS] = {"nvtxtrk_prec > 1", "nvtxtrk_prec == 2", "nvtxtrk_prec == 3", "nvtxtrk_prec == 4", "nvtxtrk_prec > 4 && nvtxtrk_prec <=8", "nvtxtrk_prec > 9"};
+string segmentCutLOF[NCUTS] = {"nvtxtrk_lof > 1", "nvtxtrk_lof == 2", "nvtxtrk_lof == 3", "nvtxtrk_lof == 4", "nvtxtrk_lof > 4 && nvtxtrk_lof <=8", "nvtxtrk_lof > 9"};
 
 //Labels for segment cuts
-string segmentCutLabel[NCUTS] = {"SEG > 1", "SEG = 2", "SEG = 3", "SEG = 4", "4 < SEG < 9", "SEG > 9"};
+string segmentCutLabel[NCUTS] = {"TRK > 1", "TRK = 2", "TRK = 3", "TRK = 4", "4 < TRK < 9", "TRK > 9"};
 
 //Cut to restrict to events with reconstructed LOF and PRECISE vertex
 string cutvtxLOFx = "TRUE";//"vtx_lof[0] > 0.05 && vtx_lof[0] < 0.25";
@@ -89,7 +91,7 @@ void fitResolutionHistograms()
 		// --> LOF X
 		p0 = h_lofvtx_diff_x[i]->GetMaximum();
 		p1 = h_lofvtx_diff_x[i]->GetBinCenter(h_lofvtx_diff_x[i]->GetMaximumBin());
-		p2 = 0.8 * h_lofvtx_diff_x[i]->GetRMS();
+		p2 = 0.4 * h_lofvtx_diff_x[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -103,7 +105,7 @@ void fitResolutionHistograms()
 		// --> LOF Y
 		p0 = h_lofvtx_diff_y[i]->GetMaximum();
 		p1 = h_lofvtx_diff_y[i]->GetBinCenter(h_lofvtx_diff_y[i]->GetMaximumBin());
-		p2 = 0.8 * h_lofvtx_diff_y[i]->GetRMS();
+		p2 = 0.4 * h_lofvtx_diff_y[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -117,7 +119,7 @@ void fitResolutionHistograms()
 		// --> LOF Z
 		p0 = h_lofvtx_diff_z[i]->GetMaximum();
 		p1 = h_lofvtx_diff_z[i]->GetBinCenter(h_lofvtx_diff_z[i]->GetMaximumBin());
-		p2 = 0.8 * h_lofvtx_diff_z[i]->GetRMS();
+		p2 = 0.4 * h_lofvtx_diff_z[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -131,7 +133,7 @@ void fitResolutionHistograms()
 		// --> PREC X
 		p0 = h_precvtx_diff_x[i]->GetMaximum();
 		p1 = h_precvtx_diff_x[i]->GetBinCenter(h_precvtx_diff_x[i]->GetMaximumBin());
-		p2 = 0.8 * h_precvtx_diff_x[i]->GetRMS();
+		p2 = 0.4 * h_precvtx_diff_x[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -145,7 +147,7 @@ void fitResolutionHistograms()
 		// --> PREC Y
 		p0 = h_precvtx_diff_y[i]->GetMaximum();
 		p1 = h_precvtx_diff_y[i]->GetBinCenter(h_precvtx_diff_y[i]->GetMaximumBin());
-		p2 = 0.8 * h_precvtx_diff_y[i]->GetRMS();
+		p2 = 0.4 * h_precvtx_diff_y[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -159,7 +161,7 @@ void fitResolutionHistograms()
 		// --> PREC Z
 		p0 = h_precvtx_diff_z[i]->GetMaximum();
 		p1 = h_precvtx_diff_z[i]->GetBinCenter(h_precvtx_diff_z[i]->GetMaximumBin());
-		p2 = 0.8 * h_precvtx_diff_z[i]->GetRMS();
+		p2 = 0.4 * h_precvtx_diff_z[i]->GetRMS();
 
 		r1 = p1 - p2;
 		r2 = p1 + p2;
@@ -238,10 +240,10 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_x[i]->SetLineColor(kRed);
 		h_precvtx_diff_x[i]->Draw("same");
 
-		fLOFDiffX[i]->SetLineColor(kBlue);
+		fLOFDiffX[i]->SetLineColor(kBlack);
 		fLOFDiffX[i]->Draw("same");
 
-		fPRECDiffX[i]->SetLineColor(kRed);
+		fPRECDiffX[i]->SetLineColor(kBlack);
 		fPRECDiffX[i]->Draw("same");
 
 		tlatMeanLOFX[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffX[i]->GetParameter(1)));
@@ -302,10 +304,10 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_y[i]->SetLineColor(kRed);
 		h_precvtx_diff_y[i]->Draw("same");
 
-		fLOFDiffY[i]->SetLineColor(kBlue);
+		fLOFDiffY[i]->SetLineColor(kBlack);
 		fLOFDiffY[i]->Draw("same");
 
-		fPRECDiffY[i]->SetLineColor(kRed);
+		fPRECDiffY[i]->SetLineColor(kBlack);
 		fPRECDiffY[i]->Draw("same");
 
 		tlatMeanLOFY[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffY[i]->GetParameter(1)));
@@ -359,10 +361,10 @@ void drawVertexDifferenceDistributions()
 		h_precvtx_diff_z[i]->SetLineColor(kRed);
 		h_precvtx_diff_z[i]->Draw("same");
 
-		fLOFDiffZ[i]->SetLineColor(kBlue);
+		fLOFDiffZ[i]->SetLineColor(kBlack);
 		fLOFDiffZ[i]->Draw("same");
 
-		fPRECDiffZ[i]->SetLineColor(kRed);
+		fPRECDiffZ[i]->SetLineColor(kBlack);
 		fPRECDiffZ[i]->Draw("same");
 
 		tlatMeanLOFZ[i] = new TLatex(0.15, 0.8, Form("Mean = %.3g", fLOFDiffZ[i]->GetParameter(1)));
@@ -760,13 +762,13 @@ void getVertexDistributions()
 		h_pisavtx_z[i] = (TH1F*) gDirectory->FindObject(Form("h_pisavtx_z_%i", i));
 
 		//LOF vertices
-		ntp_event->Draw(Form("vtx_lof[0]>>h_lofvtx_x_%i(200,-0.04,0.36)", i), segmentCut[i].c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[0]>>h_lofvtx_x_%i(200,-0.04,0.36)", i), segmentCutLOF[i].c_str(), "goff");
 		h_lofvtx_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_x_%i", i));
 
-		ntp_event->Draw(Form("vtx_lof[1]>>h_lofvtx_y_%i(200,-0.125,0.275)", i), segmentCut[i].c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[1]>>h_lofvtx_y_%i(200,-0.125,0.275)", i), segmentCutLOF[i].c_str(), "goff");
 		h_lofvtx_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_y_%i", i));
 
-		ntp_event->Draw(Form("vtx_lof[2]>>h_lofvtx_z_%i(400,-20,20)", i), segmentCut[i].c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[2]>>h_lofvtx_z_%i(400,-20,20)", i), segmentCutLOF[i].c_str(), "goff");
 		h_lofvtx_z[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_z_%i", i));
 
 		//Precise vertices
@@ -780,13 +782,13 @@ void getVertexDistributions()
 		h_precvtx_z[i] = (TH1F*) gDirectory->FindObject(Form("h_precvtx_z_%i", i));
 
 		//Difference between LOF and PISA vertices
-		ntp_event->Draw(Form("vtx_lof[0]-vtx_pisa[0]>>h_lofvtx_diff_x_%i(200,-0.2,0.2)", i), (segmentCut[i]).c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[0]-vtx_pisa[0]>>h_lofvtx_diff_x_%i(200,-0.2,0.2)", i), (segmentCutLOF[i]).c_str(), "goff");
 		h_lofvtx_diff_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_diff_x_%i", i));
 
-		ntp_event->Draw(Form("vtx_lof[1]-vtx_pisa[1]>>h_lofvtx_diff_y_%i(200,-0.2,0.2)", i), (segmentCut[i]).c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[1]-vtx_pisa[1]>>h_lofvtx_diff_y_%i(200,-0.2,0.2)", i), (segmentCutLOF[i]).c_str(), "goff");
 		h_lofvtx_diff_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_diff_y_%i", i));
 
-		ntp_event->Draw(Form("vtx_lof[2]-vtx_pisa[2]>>h_lofvtx_diff_z_%i(200,-0.2,0.2)", i), segmentCut[i].c_str(), "goff");
+		ntp_event->Draw(Form("vtx_lof[2]-vtx_pisa[2]>>h_lofvtx_diff_z_%i(200,-0.2,0.2)", i), segmentCutLOF[i].c_str(), "goff");
 		h_lofvtx_diff_z[i] = (TH1F*) gDirectory->FindObject(Form("h_lofvtx_diff_z_%i", i));
 
 		//Difference between precise and PISA vertices
@@ -820,17 +822,17 @@ void drawEventFractionWithVertex()
 	float fracPREC[5] = {0};
 
 	//Fraction of MB, narrow vtx events with nseg = xvals[i]
-	fracLOF[0] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nseg == 2") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 2");
-	fracLOF[1] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nseg == 3") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 3");
-	fracLOF[2] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nseg == 4") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 4");
-	fracLOF[3] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nseg == 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 5");
-	fracLOF[4] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nseg > 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg > 5");
+	fracLOF[0] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nvtxtrk_lof == 2") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_lof == 2");
+	fracLOF[1] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nvtxtrk_lof == 3") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_lof == 3");
+	fracLOF[2] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nvtxtrk_lof == 4") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_lof == 4");
+	fracLOF[3] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nvtxtrk_lof == 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_lof == 5");
+	fracLOF[4] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_lof[2] == vtx_lof[2] && nvtxtrk_lof > 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_lof > 5");
 
-	fracPREC[0] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nseg == 2") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 2");
-	fracPREC[1] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nseg == 3") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 3");
-	fracPREC[2] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nseg == 4") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 4");
-	fracPREC[3] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nseg == 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg == 5");
-	fracPREC[4] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nseg > 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nseg > 5");
+	fracPREC[0] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nvtxtrk_prec == 2") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_prec == 2");
+	fracPREC[1] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nvtxtrk_prec == 3") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_prec == 3");
+	fracPREC[2] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nvtxtrk_prec == 4") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_prec == 4");
+	fracPREC[3] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nvtxtrk_prec == 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_prec == 5");
+	fracPREC[4] = (float) ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && vtx_prec[2] == vtx_prec[2] && nvtxtrk_prec > 5") / ntp_event->GetEntries("TMath::Abs(vtx_bbc[2]) < 10 && pmtbbcn > 0 && pmtbbcs > 0 && nvtxtrk_prec > 5");
 
 	TGraph *gEventFraction = new TGraph(5, xvals, fracLOF);
 	TGraph *gEventFractionPrec = new TGraph(5, xvals, fracPREC);
@@ -858,7 +860,7 @@ void drawEventFractionWithVertex()
 
 	gEventFraction->SetTitle("");
 	gEventFraction->SetMarkerStyle(21);
-	gEventFraction->GetXaxis()->SetTitle("Number of Segments");
+	gEventFraction->GetXaxis()->SetTitle("Number of Vertex Tracks");
 	gEventFraction->GetYaxis()->SetTitle("Fraction of Events");
 	gEventFraction->Draw("ALP");
 
@@ -913,7 +915,7 @@ void drawResolutionSummary()
 	gRMSLOFX->SetMarkerColor(kBlue);
 	gRMSLOFX->SetMarkerStyle(21);
 	gRMSLOFX->SetTitle("X-RMS");
-	gRMSLOFX->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFX->GetXaxis()->SetTitle("Number of Vertex Tracks");
 	gRMSLOFX->GetYaxis()->SetTitle("#sigma [cm]");
 	gRMSLOFX->GetXaxis()->SetTitleFont(62);
 	gRMSLOFX->GetXaxis()->SetLabelFont(62);
@@ -934,12 +936,17 @@ void drawResolutionSummary()
 	legRMS->SetTextSize(0.05);
 	legRMS->Draw("same");
 
+	TLine *tl_iter_x = new TLine(2, 0.0174, 5, 0.0174);
+	tl_iter_x->SetLineColor(kBlack);
+	tl_iter_x->SetLineStyle(2);
+	tl_iter_x->Draw("same");
+
 	cRMS->cd(2);
 	gRMSLOFY->SetLineColor(kBlue);
 	gRMSLOFY->SetMarkerColor(kBlue);
 	gRMSLOFY->SetMarkerStyle(21);
 	gRMSLOFY->SetTitle("Y-RMS");
-	gRMSLOFY->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFY->GetXaxis()->SetTitle("Number of Vertex Tracks");
 	gRMSLOFY->GetYaxis()->SetTitle("#sigma [cm]");
 	gRMSLOFY->GetXaxis()->SetTitleFont(62);
 	gRMSLOFY->GetXaxis()->SetLabelFont(62);
@@ -953,12 +960,17 @@ void drawResolutionSummary()
 	gRMSPRECY->SetMarkerStyle(21);
 	gRMSPRECY->Draw("LP,same");
 
+	TLine *tl_iter_y = new TLine(2, 0.0141, 5, 0.0141);
+	tl_iter_y->SetLineColor(kBlack);
+	tl_iter_y->SetLineStyle(2);
+	tl_iter_y->Draw("same");
+
 	cRMS->cd(3);
 	gRMSLOFZ->SetLineColor(kBlue);
 	gRMSLOFZ->SetMarkerColor(kBlue);
 	gRMSLOFZ->SetMarkerStyle(21);
 	gRMSLOFZ->SetTitle("Z-RMS");
-	gRMSLOFZ->GetXaxis()->SetTitle("Number of SvxSegments");
+	gRMSLOFZ->GetXaxis()->SetTitle("Number of Vertex Tracks");
 	gRMSLOFZ->GetYaxis()->SetTitle("#sigma [cm]");
 	gRMSLOFZ->GetXaxis()->SetTitleFont(62);
 	gRMSLOFZ->GetXaxis()->SetLabelFont(62);
@@ -976,7 +988,7 @@ void drawResolutionSummary()
 void AnalyzeResolution()
 {
 	//Read file
-	TFile *fin = new TFile("Data/423844_reco_lof.root");
+	TFile *fin = new TFile("Data/423844_sims_narrowvtx_ew.root");
 	ntp_event  = (TTree*) fin->Get("ntp_event");
 
 	getVertexDistributions();
@@ -984,5 +996,6 @@ void AnalyzeResolution()
 	fitResolutionHistograms();
 	//drawVertexDistributions();
 	drawVertexDifferenceDistributions();
+	//drawEventFractionWithVertex();
 	drawResolutionSummary();
 }
