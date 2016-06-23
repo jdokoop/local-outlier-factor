@@ -985,6 +985,59 @@ void drawResolutionSummary()
 	gRMSPRECZ->Draw("LP,same");
 }
 
+void plotLongitudinalTrackingEfficiency()
+{
+	//Plot efficiency in 10 bins within +/- 10 cm
+	//Select only MB (pmtbbcn > 0 && pmtbbcs > 0) narrow vertex events
+
+	float zVals[20]   = {0};
+	float effValsPrec[20] = {0};
+	float effValsLOF[20] = {0};
+
+	for (int i = -10; i <= 9 ; i++)
+	{
+		float totalTracks = ntp_event->GetEntries(Form("pmtbbcn > 0 && pmtbbcs > 0 && vtx_bbc[2] > %i && vtx_bbc[2] < %i", i, i + 1));
+		float precTracks  = ntp_event->GetEntries(Form("pmtbbcn > 0 && pmtbbcs > 0 && vtx_bbc[2] > %i && vtx_bbc[2] < %i && vtx_prec[2]==vtx_prec[2]", i, i + 1));
+		float lofTracks  = ntp_event->GetEntries(Form("pmtbbcn > 0 && pmtbbcs > 0 && vtx_bbc[2] > %i && vtx_bbc[2] < %i && vtx_lof[2]==vtx_lof[2]", i, i + 1));
+
+		zVals[i + 10]   = i + 0.5;
+		effValsPrec[i + 10] = precTracks / totalTracks;
+		effValsLOF[i + 10] = lofTracks / totalTracks;
+	}
+
+	TGraph *gLongitudinalEffPrec = new TGraph(20, zVals, effValsPrec);
+	gLongitudinalEffPrec->SetLineColor(kRed);
+	gLongitudinalEffPrec->SetMarkerStyle(21);
+	gLongitudinalEffPrec->SetMarkerColor(kRed);
+
+	TGraph *gLongitudinalEffLOF = new TGraph(20, zVals, effValsLOF);
+	gLongitudinalEffLOF->SetLineColor(kBlue);
+	gLongitudinalEffLOF->SetMarkerStyle(21);
+	gLongitudinalEffLOF->SetMarkerColor(kBlue);
+
+	//Draw
+	TCanvas *cEff = new TCanvas("cEff", "cEff", 600, 600);
+	gLongitudinalEffPrec->Draw("AP");
+	gLongitudinalEffLOF->Draw("P,same");
+
+	gLongitudinalEffPrec->SetTitle("");
+	gLongitudinalEffPrec->GetXaxis()->SetTitle("BBC-z [cm]");
+	gLongitudinalEffPrec->GetXaxis()->SetLabelFont(62);
+	gLongitudinalEffPrec->GetXaxis()->SetTitleFont(62);
+	gLongitudinalEffPrec->GetYaxis()->SetTitle("Efficiency");
+	gLongitudinalEffPrec->GetYaxis()->SetLabelFont(62);
+	gLongitudinalEffPrec->GetYaxis()->SetTitleFont(62);
+	gLongitudinalEffPrec->GetYaxis()->SetRangeUser(0, 0.7);
+	gLongitudinalEffPrec->GetYaxis()->SetTitleOffset(1.4);
+
+	TLegend *legLongEff = new TLegend(0.6, 0.2, 0.85, 0.35);
+	legLongEff->AddEntry(gLongitudinalEffLOF, "LOF", "L");
+	legLongEff->AddEntry(gLongitudinalEffPrec, "ITERATIVE", "L");
+	legLongEff->SetLineColor(kWhite);
+	legLongEff->SetTextSize(0.05);
+	legLongEff->Draw("same");
+}
+
 void AnalyzeResolution()
 {
 	//Read file
@@ -998,4 +1051,5 @@ void AnalyzeResolution()
 	drawVertexDifferenceDistributions();
 	//drawEventFractionWithVertex();
 	drawResolutionSummary();
+	plotLongitudinalTrackingEfficiency();
 }
