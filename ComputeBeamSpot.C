@@ -30,6 +30,11 @@ TH1F *h_prec_x[NUMSEG];
 TH1F *h_prec_y[NUMSEG];
 TH1F *h_prec_z[NUMSEG];
 
+TH1F *h_prec_x_E[NUMSEG];
+TH1F *h_prec_x_W[NUMSEG];
+TH1F *h_prec_y_E[NUMSEG];
+TH1F *h_prec_y_W[NUMSEG];
+
 //Synthetic distribution of vertices from the interative algorith
 TH1F *h_prec_synth_x[NUMSEG];
 TH1F *h_prec_synth_y[NUMSEG];
@@ -38,6 +43,11 @@ TH1F *h_prec_synth_y[NUMSEG];
 TH1F *h_lof_x[NUMSEG];
 TH1F *h_lof_y[NUMSEG];
 TH1F *h_lof_z[NUMSEG];
+
+TH1F *h_lof_x_E[NUMSEG];
+TH1F *h_lof_x_W[NUMSEG];
+TH1F *h_lof_y_E[NUMSEG];
+TH1F *h_lof_y_W[NUMSEG];
 
 //Synthetic distribution of vertices from the LOF algorith
 TH1F *h_lof_synth_x[NUMSEG];
@@ -57,8 +67,18 @@ TH1F *h_ew_lof_z[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_x[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_y[NUMSEG];
 
+TF1 *f_gauss_fits_vtx_prec_x_E[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_x_W[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_y_E[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_y_W[NUMSEG];
+
 TF1 *f_gauss_fits_vtx_lof_x[NUMSEG];
 TF1 *f_gauss_fits_vtx_lof_y[NUMSEG];
+
+TF1 *f_gauss_fits_vtx_lof_x_E[NUMSEG];
+TF1 *f_gauss_fits_vtx_lof_x_W[NUMSEG];
+TF1 *f_gauss_fits_vtx_lof_y_E[NUMSEG];
+TF1 *f_gauss_fits_vtx_lof_y_W[NUMSEG];
 
 TF1 *f_gauss_fits_diff_prec_x[NUMSEG];
 TF1 *f_gauss_fits_diff_prec_y[NUMSEG];
@@ -77,6 +97,8 @@ TF1 *f_gauss_fits_vtx_lof_synth_y[NUMSEG];
 //Resolution
 float resol_lof[2][NUMSEG] = {0};
 float resol_prec[2][NUMSEG] = {0};
+float resol_lof_err[2][NUMSEG] = {0};
+float resol_prec_err[2][NUMSEG] = {0};
 TGraph *g_resol_prec_x;
 TGraph *g_resol_prec_y;
 TGraph *g_bspt_prec_x;
@@ -85,6 +107,8 @@ TGraph *g_bspt_prec_y;
 //Beam spot size
 float bspt_lof[2][NUMSEG] = {0};
 float bspt_prec[2][NUMSEG] = {0};
+float bspt_lof_err[2][NUMSEG] = {0};
+float bspt_prec_err[2][NUMSEG] = {0};
 TGraph *g_resol_lof_x;
 TGraph *g_resol_lof_y;
 TGraph *g_bspt_lof_x;
@@ -98,17 +122,25 @@ void calculateResolution()
 {
 	for (int i = 0; i < NUMSEG; i++)
 	{
-		resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
-		resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
+		//resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
+		//resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
 
 		bspt_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2));
 		bspt_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2));
 
-		resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
-		resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
+		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i]*bspt_prec[0][i]);
+		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i]*bspt_prec[1][i]);
+
+		//resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
+		//resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
 
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
+
+		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i]*bspt_lof[0][i]);
+		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i]*bspt_lof[1][i]);
+				cout << resol_lof[0][i] << endl;
+
 	}
 }
 
@@ -271,10 +303,10 @@ void fitHistograms()
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
-		if(NUMSEG == 3)
+		if (NUMSEG == 2 || NUMSEG == 3)
 		{
-			vertexRMS = 0.8;
-			vertexDiffRMS = 0.8;
+			vertexRMS = 1.0;
+			vertexDiffRMS = 1.0;
 		}
 
 		// --> Precise X
@@ -289,6 +321,32 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_x[i]->SetParameters(p0, p1, p2);
 
 		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
+
+		// --> Precise X E
+		p0 = h_prec_x_E[i]->GetMaximum();
+		p1 = h_prec_x_E[i]->GetMean();
+		p2 = vertexRMS * h_prec_x_E[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_x_E[i] = new TF1(Form("f_prec_x_E_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_x_E[i]->SetParameters(p0, p1, p2);
+
+		h_prec_x_E[i]->Fit(Form("f_prec_x_E_%i", i), "Q0R");
+
+		// --> Precise X W
+		p0 = h_prec_x_W[i]->GetMaximum();
+		p1 = h_prec_x_W[i]->GetMean();
+		p2 = vertexRMS * h_prec_x_W[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_x_W[i] = new TF1(Form("f_prec_x_W_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_x_W[i]->SetParameters(p0, p1, p2);
+
+		h_prec_x_W[i]->Fit(Form("f_prec_x_W_%i", i), "Q0R");
 
 		// --> Synthetic Precise X
 		p0 = h_prec_synth_x[i]->GetMaximum();
@@ -315,6 +373,32 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_y[i]->SetParameters(p0, p1, p2);
 
 		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
+
+		// --> Precise X E
+		p0 = h_prec_y_E[i]->GetMaximum();
+		p1 = h_prec_y_E[i]->GetMean();
+		p2 = vertexRMS * h_prec_y_E[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_y_E[i] = new TF1(Form("f_prec_y_E_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_y_E[i]->SetParameters(p0, p1, p2);
+
+		h_prec_y_E[i]->Fit(Form("f_prec_y_E_%i", i), "Q0R");
+
+		// --> Precise X W
+		p0 = h_prec_y_W[i]->GetMaximum();
+		p1 = h_prec_y_W[i]->GetMean();
+		p2 = vertexRMS * h_prec_y_W[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_y_W[i] = new TF1(Form("f_prec_y_W_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_y_W[i]->SetParameters(p0, p1, p2);
+
+		h_prec_y_W[i]->Fit(Form("f_prec_y_W_%i", i), "Q0R");
 
 		// --> Synthetic Precise Y
 		p0 = h_prec_synth_y[i]->GetMaximum();
@@ -397,6 +481,32 @@ void fitHistograms()
 
 		h_lof_synth_x[i]->Fit(Form("f_lof_synth_x_%i", i), "Q0R");
 
+		// --> LOF X E
+		p0 = h_lof_x_E[i]->GetMaximum();
+		p1 = h_lof_x_E[i]->GetMean();
+		p2 = vertexRMS * h_lof_x_E[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x_E[i] = new TF1(Form("f_lof_x_E_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_x_E[i]->SetParameters(p0, p1, p2);
+
+		h_lof_x_E[i]->Fit(Form("f_lof_x_E_%i", i), "Q0R");
+
+		// --> LOF X W
+		p0 = h_lof_x_W[i]->GetMaximum();
+		p1 = h_lof_x_W[i]->GetMean();
+		p2 = vertexRMS * h_lof_x_W[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x_W[i] = new TF1(Form("f_lof_x_W_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_x_W[i]->SetParameters(p0, p1, p2);
+
+		h_lof_x_W[i]->Fit(Form("f_lof_x_W_%i", i), "Q0R");
+
 		// --> LOF Y
 		p0 = h_lof_y[i]->GetMaximum();
 		p1 = h_lof_y[i]->GetMean();
@@ -422,6 +532,32 @@ void fitHistograms()
 		f_gauss_fits_vtx_lof_synth_y[i]->SetParameters(p0, p1, p2);
 
 		h_lof_synth_y[i]->Fit(Form("f_lof_synth_y_%i", i), "Q0R");
+
+		// --> LOF Y E
+		p0 = h_lof_y_E[i]->GetMaximum();
+		p1 = h_lof_y_E[i]->GetMean();
+		p2 = vertexRMS * h_lof_y_E[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y_E[i] = new TF1(Form("f_lof_y_E_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_y_E[i]->SetParameters(p0, p1, p2);
+
+		h_lof_y_E[i]->Fit(Form("f_lof_y_E_%i", i), "Q0R");
+
+		// --> LOF Y W
+		p0 = h_lof_y_W[i]->GetMaximum();
+		p1 = h_lof_y_W[i]->GetMean();
+		p2 = vertexRMS * h_lof_y_W[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y_W[i] = new TF1(Form("f_lof_y_W_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_lof_y_W[i]->SetParameters(p0, p1, p2);
+
+		h_lof_y_W[i]->Fit(Form("f_lof_y_W_%i", i), "Q0R");
 
 		// --> LOF E-W X
 		p0 = h_ew_lof_x[i]->GetMaximum();
@@ -472,53 +608,77 @@ void readHistograms()
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		//Get vertex distribution from iterative algorithm
-		ntp_svxseg->Draw(Form("vtx_prec[0]>>h_prec_x_%i(400,-0.5,0.5)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec[0]>>h_prec_x_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_x[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec[1]>>h_prec_y_%i(400,-0.5,0.5)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec[1]>>h_prec_y_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_y[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec[2]>>h_prec_z_%i(400,-20,20)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec[2]>>h_prec_z_%i(150,-20,20)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_z[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_z_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_E[0] - vtx_prec_W[0]>>h_ew_prec_x_%i(400,-0.4,0.4)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_E[0]>>h_prec_x_E_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		h_prec_x_E[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_E_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_prec_E[1]>>h_prec_y_E_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		h_prec_y_E[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_E_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_prec_W[0]>>h_prec_x_W_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		h_prec_x_W[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_W_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_prec_W[1]>>h_prec_y_W_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		h_prec_y_W[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_W_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_prec_E[0] - vtx_prec_W[0]>>h_ew_prec_x_%i(150,-0.3,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_ew_prec_x[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_prec_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_E[1] - vtx_prec_W[1]>>h_ew_prec_y_%i(400,-0.4,0.4)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_E[1] - vtx_prec_W[1]>>h_ew_prec_y_%i(150,-0.3,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_ew_prec_y[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_prec_y_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_E[2] - vtx_prec_W[2]>>h_ew_prec_z_%i(400,-0.4,0.4)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_E[2] - vtx_prec_W[2]>>h_ew_prec_z_%i(150,-0.3,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_ew_prec_z[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_prec_z_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_prec_E[0] + vtx_prec_W[0])/2.0>>h_prec_synth_x_%i(400,-0.4,0.4)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_prec_E[0] + vtx_prec_W[0])/2.0>>h_prec_synth_x_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_synth_x[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_synth_x_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_prec_E[1] + vtx_prec_W[1])/2.0>>h_prec_synth_y_%i(400,-0.4,0.4)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_prec_E[1] + vtx_prec_W[1])/2.0>>h_prec_synth_y_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_synth_y[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_synth_y_%i", i));
 
 		//Get vertex distributions from the LOF algorithm
-		ntp_svxseg->Draw(Form("vtx_lof[0]>>h_lof_x_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof[0]>>h_lof_x_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof[1]>>h_lof_y_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof[1]>>h_lof_y_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof[2]>>h_lof_z_%i(400,-20,20)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof[2]>>h_lof_z_%i(150,-20,20)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_z[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_z_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_E[0] - vtx_lof_W[0]>>h_ew_lof_x_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_E[0]>>h_lof_x_E_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		h_lof_x_E[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_E_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_lof_E[1]>>h_lof_y_E_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		h_lof_y_E[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_E_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_lof_W[0]>>h_lof_x_W_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		h_lof_x_W[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_W_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_lof_W[1]>>h_lof_y_W_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		h_lof_y_W[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_W_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_lof_E[0] - vtx_lof_W[0]>>h_ew_lof_x_%i(150,-0.3,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_ew_lof_x[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_lof_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_E[1] - vtx_lof_W[1]>>h_ew_lof_y_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_E[1] - vtx_lof_W[1]>>h_ew_lof_y_%i(150,-0.3,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_ew_lof_y[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_lof_y_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_E[2] - vtx_lof_W[2]>>h_ew_lof_z_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_E[2] - vtx_lof_W[2]>>h_ew_lof_z_%i(150,-0.3,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_ew_lof_z[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_lof_z_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_lof_E[0] + vtx_lof_W[0])/2.0>>h_lof_synth_x_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_lof_E[0] + vtx_lof_W[0])/2.0>>h_lof_synth_x_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_synth_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_synth_x_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_lof_E[1] + vtx_lof_W[1])/2.0>>h_lof_synth_y_%i(400,-0.4,0.4)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_lof_E[1] + vtx_lof_W[1])/2.0>>h_lof_synth_y_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_synth_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_synth_y_%i", i));
 	}
 }
@@ -529,9 +689,13 @@ void plotResolution()
 
 	float resol_prec_x[NUMSEG];
 	float resol_prec_y[NUMSEG];
+	float resol_prec_x_err[NUMSEG];
+	float resol_prec_y_err[NUMSEG];
 
 	float resol_lof_x[NUMSEG];
 	float resol_lof_y[NUMSEG];
+	float resol_lof_x_err[NUMSEG];
+	float resol_lof_y_err[NUMSEG];
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
@@ -562,11 +726,11 @@ void plotResolution()
 	g_resol_prec_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_resol_prec_x->GetYaxis()->SetTitleFont(62);
 	g_resol_prec_x->GetYaxis()->SetLabelFont(62);
-	g_resol_prec_x->Draw("ALP");
+	g_resol_prec_x->Draw("AP");
 	g_resol_prec_y->SetMarkerStyle(20);
 	g_resol_prec_y->SetLineColor(kBlue);
 	g_resol_prec_y->SetMarkerColor(kBlue);
-	g_resol_prec_y->Draw("LP,same");
+	g_resol_prec_y->Draw("P,same");
 
 	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(1), "ANY");
 	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(2), "2");
@@ -597,11 +761,11 @@ void plotResolution()
 	g_resol_lof_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_resol_lof_x->GetYaxis()->SetTitleFont(62);
 	g_resol_lof_x->GetYaxis()->SetLabelFont(62);
-	g_resol_lof_x->Draw("ALP");
+	g_resol_lof_x->Draw("AP");
 	g_resol_lof_y->SetMarkerStyle(20);
 	g_resol_lof_y->SetLineColor(kBlue);
 	g_resol_lof_y->SetMarkerColor(kBlue);
-	g_resol_lof_y->Draw("LP,same");
+	g_resol_lof_y->Draw("P,same");
 
 	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(1), "ANY");
 	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(2), "2");
@@ -648,16 +812,16 @@ void plotBeamSpot()
 	g_bspt_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_bspt_prec_x->GetXaxis()->SetTitleFont(62);
 	g_bspt_prec_x->GetXaxis()->SetLabelFont(62);
-	g_bspt_prec_x->GetYaxis()->SetTitle("#sigma_{bsptution} [cm]");
+	g_bspt_prec_x->GetYaxis()->SetTitle("#sigma_{beam} [cm]");
 	g_bspt_prec_x->GetYaxis()->SetTitleOffset(1.85);
 	g_bspt_prec_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_bspt_prec_x->GetYaxis()->SetTitleFont(62);
 	g_bspt_prec_x->GetYaxis()->SetLabelFont(62);
-	g_bspt_prec_x->Draw("ALP");
+	g_bspt_prec_x->Draw("AP");
 	g_bspt_prec_y->SetMarkerStyle(20);
 	g_bspt_prec_y->SetLineColor(kBlue);
 	g_bspt_prec_y->SetMarkerColor(kBlue);
-	g_bspt_prec_y->Draw("LP,same");
+	g_bspt_prec_y->Draw("P,same");
 
 	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(1), "ANY");
 	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(2), "2");
@@ -683,16 +847,16 @@ void plotBeamSpot()
 	g_bspt_lof_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_bspt_lof_x->GetXaxis()->SetTitleFont(62);
 	g_bspt_lof_x->GetXaxis()->SetLabelFont(62);
-	g_bspt_lof_x->GetYaxis()->SetTitle("#sigma_{bsptution} [cm]");
+	g_bspt_lof_x->GetYaxis()->SetTitle("#sigma_{beam} [cm]");
 	g_bspt_lof_x->GetYaxis()->SetTitleOffset(1.85);
 	g_bspt_lof_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_bspt_lof_x->GetYaxis()->SetTitleFont(62);
 	g_bspt_lof_x->GetYaxis()->SetLabelFont(62);
-	g_bspt_lof_x->Draw("ALP");
+	g_bspt_lof_x->Draw("AP");
 	g_bspt_lof_y->SetMarkerStyle(20);
 	g_bspt_lof_y->SetLineColor(kBlue);
 	g_bspt_lof_y->SetMarkerColor(kBlue);
-	g_bspt_lof_y->Draw("LP,same");
+	g_bspt_lof_y->Draw("P,same");
 
 	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(1), "ANY");
 	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(2), "2");
