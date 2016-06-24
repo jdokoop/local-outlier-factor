@@ -125,8 +125,8 @@ void calculateResolution()
 		//resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
 		//resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
 
-		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i]*bspt_prec[0][i]);
-		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i]*bspt_prec[1][i]);
+		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i] * bspt_prec[0][i]);
+		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i] * bspt_prec[1][i]);
 
 		resol_prec_err[0][i] = f_gauss_fits_diff_prec_x[i]->GetParError(2) / 2.0;
 		resol_prec_err[1][i] = f_gauss_fits_diff_prec_y[i]->GetParError(2) / 2.0;
@@ -153,8 +153,8 @@ void calculateResolution()
 		//resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
 		//resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
 
-		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i]*bspt_lof[0][i]);
-		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i]*bspt_lof[1][i]);
+		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i] * bspt_lof[0][i]);
+		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i] * bspt_lof[1][i]);
 
 		resol_lof_err[0][i] = f_gauss_fits_diff_lof_x[i]->GetParError(2) / 2.0;
 		resol_lof_err[1][i] = f_gauss_fits_diff_lof_y[i]->GetParError(2) / 2.0;
@@ -331,6 +331,8 @@ void plotHistograms()
 void fitHistograms()
 {
 	//Fit histograms with Gaussians
+	//Do the fit in two iterations: First, seed fit with curve-derived parameters
+	//Then, take parameters from first fit to fit again over a narrower range
 	double r1, r2;
 	double p0, p1, p2;
 
@@ -358,6 +360,9 @@ void fitHistograms()
 
 		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_prec_x[i]->SetParameters(f_gauss_fits_vtx_prec_x[i]->GetParameter(0), f_gauss_fits_vtx_prec_x[i]->GetParameter(1), f_gauss_fits_vtx_prec_x[i]->GetParameter(2));
+		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
+
 		// --> Precise X E
 		p0 = h_prec_x_E[i]->GetMaximum();
 		p1 = h_prec_x_E[i]->GetMean();
@@ -369,6 +374,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_x_E[i] = new TF1(Form("f_prec_x_E_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_prec_x_E[i]->SetParameters(p0, p1, p2);
 
+		h_prec_x_E[i]->Fit(Form("f_prec_x_E_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_prec_x_E[i]->SetParameters(f_gauss_fits_vtx_prec_x_E[i]->GetParameter(0), f_gauss_fits_vtx_prec_x_E[i]->GetParameter(1), f_gauss_fits_vtx_prec_x_E[i]->GetParameter(2));
 		h_prec_x_E[i]->Fit(Form("f_prec_x_E_%i", i), "Q0R");
 
 		// --> Precise X W
@@ -384,6 +392,9 @@ void fitHistograms()
 
 		h_prec_x_W[i]->Fit(Form("f_prec_x_W_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_prec_x_W[i]->SetParameters(f_gauss_fits_vtx_prec_x_W[i]->GetParameter(0), f_gauss_fits_vtx_prec_x_W[i]->GetParameter(1), f_gauss_fits_vtx_prec_x_W[i]->GetParameter(2));
+		h_prec_x_W[i]->Fit(Form("f_prec_x_W_%i", i), "Q0R");
+
 		// --> Synthetic Precise X
 		p0 = h_prec_synth_x[i]->GetMaximum();
 		p1 = h_prec_synth_x[i]->GetMean();
@@ -395,6 +406,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_synth_x[i] = new TF1(Form("f_prec_synth_x_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_prec_synth_x[i]->SetParameters(p0, p1, p2);
 
+		h_prec_synth_x[i]->Fit(Form("f_prec_synth_x_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_prec_synth_x[i]->SetParameters(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(0), f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(1), f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2));
 		h_prec_synth_x[i]->Fit(Form("f_prec_synth_x_%i", i), "Q0R");
 
 		// --> Precise Y
@@ -410,6 +424,9 @@ void fitHistograms()
 
 		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_prec_y[i]->SetParameters(f_gauss_fits_vtx_prec_y[i]->GetParameter(0), f_gauss_fits_vtx_prec_y[i]->GetParameter(1), f_gauss_fits_vtx_prec_y[i]->GetParameter(2));
+		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
+
 		// --> Precise X E
 		p0 = h_prec_y_E[i]->GetMaximum();
 		p1 = h_prec_y_E[i]->GetMean();
@@ -421,6 +438,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_y_E[i] = new TF1(Form("f_prec_y_E_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_prec_y_E[i]->SetParameters(p0, p1, p2);
 
+		h_prec_y_E[i]->Fit(Form("f_prec_y_E_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_prec_y_E[i]->SetParameters(f_gauss_fits_vtx_prec_y_E[i]->GetParameter(0), f_gauss_fits_vtx_prec_y_E[i]->GetParameter(1), f_gauss_fits_vtx_prec_y_E[i]->GetParameter(2));
 		h_prec_y_E[i]->Fit(Form("f_prec_y_E_%i", i), "Q0R");
 
 		// --> Precise X W
@@ -436,6 +456,9 @@ void fitHistograms()
 
 		h_prec_y_W[i]->Fit(Form("f_prec_y_W_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_prec_y_W[i]->SetParameters(f_gauss_fits_vtx_prec_y_W[i]->GetParameter(0), f_gauss_fits_vtx_prec_y_W[i]->GetParameter(1), f_gauss_fits_vtx_prec_y_W[i]->GetParameter(2));
+		h_prec_y_W[i]->Fit(Form("f_prec_y_W_%i", i), "Q0R");
+
 		// --> Synthetic Precise Y
 		p0 = h_prec_synth_y[i]->GetMaximum();
 		p1 = h_prec_synth_y[i]->GetMean();
@@ -447,6 +470,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_prec_synth_y[i] = new TF1(Form("f_prec_synth_y_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_prec_synth_y[i]->SetParameters(p0, p1, p2);
 
+		h_prec_synth_y[i]->Fit(Form("f_prec_synth_y_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_prec_synth_y[i]->SetParameters(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(0), f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(1), f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2));
 		h_prec_synth_y[i]->Fit(Form("f_prec_synth_y_%i", i), "Q0R");
 
 		// --> Precise E-W X
@@ -463,6 +489,9 @@ void fitHistograms()
 
 		h_ew_prec_x[i]->Fit(Form("f_ew_prec_x_%i", i), "Q0R");
 
+		f_gauss_fits_diff_prec_x[i]->SetParameters(f_gauss_fits_diff_prec_x[i]->GetParameter(0), f_gauss_fits_diff_prec_x[i]->GetParameter(1), f_gauss_fits_diff_prec_x[i]->GetParameter(2));
+		h_ew_prec_x[i]->Fit(Form("f_ew_prec_x_%i", i), "Q0R");
+
 		// --> Precise E-W Y
 		p0 = h_ew_prec_y[i]->GetMaximum();
 		//p1 = h_ew_prec_y[i]->GetBinCenter(h_ew_prec_y[i]->GetMaximumBin());
@@ -475,6 +504,9 @@ void fitHistograms()
 		f_gauss_fits_diff_prec_y[i] = new TF1(Form("f_ew_prec_y_%i", i), "gaus", r1, r2);
 		f_gauss_fits_diff_prec_y[i]->SetParameters(p0, p1, p2);
 
+		h_ew_prec_y[i]->Fit(Form("f_ew_prec_y_%i", i), "Q0R");
+
+		f_gauss_fits_diff_prec_y[i]->SetParameters(f_gauss_fits_diff_prec_y[i]->GetParameter(0), f_gauss_fits_diff_prec_y[i]->GetParameter(1), f_gauss_fits_diff_prec_y[i]->GetParameter(2));
 		h_ew_prec_y[i]->Fit(Form("f_ew_prec_y_%i", i), "Q0R");
 
 		// --> Precise E-W Z
@@ -491,6 +523,9 @@ void fitHistograms()
 
 		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
 
+		f_gauss_fits_diff_prec_z[i]->SetParameters(f_gauss_fits_diff_prec_z[i]->GetParameter(0), f_gauss_fits_diff_prec_z[i]->GetParameter(1), f_gauss_fits_diff_prec_z[i]->GetParameter(2));
+		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
+
 		// --> LOF X
 		p0 = h_lof_x[i]->GetMaximum();
 		p1 = h_lof_x[i]->GetMean();
@@ -502,6 +537,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_lof_x[i] = new TF1(Form("f_lof_x_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_lof_x[i]->SetParameters(p0, p1, p2);
 
+		h_lof_x[i]->Fit(Form("f_lof_x_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_lof_x[i]->SetParameters(f_gauss_fits_vtx_lof_x[i]->GetParameter(0), f_gauss_fits_vtx_lof_x[i]->GetParameter(1), f_gauss_fits_vtx_lof_x[i]->GetParameter(2));
 		h_lof_x[i]->Fit(Form("f_lof_x_%i", i), "Q0R");
 
 		// --> Synthetic LOF X
@@ -517,6 +555,9 @@ void fitHistograms()
 
 		h_lof_synth_x[i]->Fit(Form("f_lof_synth_x_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_lof_synth_x[i]->SetParameters(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(0), f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(1), f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2));
+		h_lof_synth_x[i]->Fit(Form("f_lof_synth_x_%i", i), "Q0R");
+
 		// --> LOF X E
 		p0 = h_lof_x_E[i]->GetMaximum();
 		p1 = h_lof_x_E[i]->GetMean();
@@ -528,6 +569,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_lof_x_E[i] = new TF1(Form("f_lof_x_E_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_lof_x_E[i]->SetParameters(p0, p1, p2);
 
+		h_lof_x_E[i]->Fit(Form("f_lof_x_E_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_lof_x_E[i]->SetParameters(f_gauss_fits_vtx_lof_x_E[i]->GetParameter(0), f_gauss_fits_vtx_lof_x_E[i]->GetParameter(1), f_gauss_fits_vtx_lof_x_E[i]->GetParameter(2));
 		h_lof_x_E[i]->Fit(Form("f_lof_x_E_%i", i), "Q0R");
 
 		// --> LOF X W
@@ -543,6 +587,9 @@ void fitHistograms()
 
 		h_lof_x_W[i]->Fit(Form("f_lof_x_W_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_lof_x_W[i]->SetParameters(f_gauss_fits_vtx_lof_x_W[i]->GetParameter(0), f_gauss_fits_vtx_lof_x_W[i]->GetParameter(1), f_gauss_fits_vtx_lof_x_W[i]->GetParameter(2));
+		h_lof_x_W[i]->Fit(Form("f_lof_x_W_%i", i), "Q0R");
+
 		// --> LOF Y
 		p0 = h_lof_y[i]->GetMaximum();
 		p1 = h_lof_y[i]->GetMean();
@@ -554,6 +601,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_lof_y[i] = new TF1(Form("f_lof_y_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_lof_y[i]->SetParameters(p0, p1, p2);
 
+		h_lof_y[i]->Fit(Form("f_lof_y_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_lof_y[i]->SetParameters(f_gauss_fits_vtx_lof_y[i]->GetParameter(0), f_gauss_fits_vtx_lof_y[i]->GetParameter(1), f_gauss_fits_vtx_lof_y[i]->GetParameter(2));
 		h_lof_y[i]->Fit(Form("f_lof_y_%i", i), "Q0R");
 
 		// --> Synthetic LOF Y
@@ -569,6 +619,9 @@ void fitHistograms()
 
 		h_lof_synth_y[i]->Fit(Form("f_lof_synth_y_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_lof_synth_y[i]->SetParameters(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(0), f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(1), f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2));
+		h_lof_synth_y[i]->Fit(Form("f_lof_synth_y_%i", i), "Q0R");
+
 		// --> LOF Y E
 		p0 = h_lof_y_E[i]->GetMaximum();
 		p1 = h_lof_y_E[i]->GetMean();
@@ -580,6 +633,9 @@ void fitHistograms()
 		f_gauss_fits_vtx_lof_y_E[i] = new TF1(Form("f_lof_y_E_%i", i), "gaus", r1, r2);
 		f_gauss_fits_vtx_lof_y_E[i]->SetParameters(p0, p1, p2);
 
+		h_lof_y_E[i]->Fit(Form("f_lof_y_E_%i", i), "Q0R");
+
+		f_gauss_fits_vtx_lof_y_E[i]->SetParameters(f_gauss_fits_vtx_lof_y_E[i]->GetParameter(0), f_gauss_fits_vtx_lof_y_E[i]->GetParameter(1), f_gauss_fits_vtx_lof_y_E[i]->GetParameter(2));
 		h_lof_y_E[i]->Fit(Form("f_lof_y_E_%i", i), "Q0R");
 
 		// --> LOF Y W
@@ -595,6 +651,9 @@ void fitHistograms()
 
 		h_lof_y_W[i]->Fit(Form("f_lof_y_W_%i", i), "Q0R");
 
+		f_gauss_fits_vtx_lof_y_W[i]->SetParameters(f_gauss_fits_vtx_lof_y_W[i]->GetParameter(0), f_gauss_fits_vtx_lof_y_W[i]->GetParameter(1), f_gauss_fits_vtx_lof_y_W[i]->GetParameter(2));
+		h_lof_y_W[i]->Fit(Form("f_lof_y_W_%i", i), "Q0R");
+
 		// --> LOF E-W X
 		p0 = h_ew_lof_x[i]->GetMaximum();
 		p1 = h_ew_lof_x[i]->GetMean();
@@ -606,6 +665,9 @@ void fitHistograms()
 		f_gauss_fits_diff_lof_x[i] = new TF1(Form("f_ew_lof_x_%i", i), "gaus", r1, r2);
 		f_gauss_fits_diff_lof_x[i]->SetParameters(p0, p1, p2);
 
+		h_ew_lof_x[i]->Fit(Form("f_ew_lof_x_%i", i), "Q0R");
+
+		f_gauss_fits_diff_lof_x[i]->SetParameters(f_gauss_fits_diff_lof_x[i]->GetParameter(0), f_gauss_fits_diff_lof_x[i]->GetParameter(1), f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		h_ew_lof_x[i]->Fit(Form("f_ew_lof_x_%i", i), "Q0R");
 
 		// --> LOF E-W Y
@@ -621,6 +683,9 @@ void fitHistograms()
 
 		h_ew_lof_y[i]->Fit(Form("f_ew_lof_y_%i", i), "Q0R");
 
+		f_gauss_fits_diff_lof_y[i]->SetParameters(f_gauss_fits_diff_lof_y[i]->GetParameter(0), f_gauss_fits_diff_lof_y[i]->GetParameter(1), f_gauss_fits_diff_lof_y[i]->GetParameter(2));
+		h_ew_lof_y[i]->Fit(Form("f_ew_lof_y_%i", i), "Q0R");
+
 		// --> LOF E-W Z
 		p0 = h_ew_lof_z[i]->GetMaximum();
 		p1 = h_ew_lof_z[i]->GetMean();
@@ -632,6 +697,9 @@ void fitHistograms()
 		f_gauss_fits_diff_lof_z[i] = new TF1(Form("f_ew_lof_z_%i", i), "gaus", r1, r2);
 		f_gauss_fits_diff_lof_z[i]->SetParameters(p0, p1, p2);
 
+		h_ew_lof_z[i]->Fit(Form("f_ew_lof_z_%i", i), "Q0R");
+
+		f_gauss_fits_diff_lof_z[i]->SetParameters(f_gauss_fits_diff_lof_z[i]->GetParameter(0), f_gauss_fits_diff_lof_z[i]->GetParameter(1), f_gauss_fits_diff_lof_z[i]->GetParameter(2));
 		h_ew_lof_z[i]->Fit(Form("f_ew_lof_z_%i", i), "Q0R");
 	}
 }
