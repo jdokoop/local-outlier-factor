@@ -101,8 +101,8 @@ float resol_lof_err[2][NUMSEG] = {0};
 float resol_prec_err[2][NUMSEG] = {0};
 TGraph *g_resol_prec_x;
 TGraph *g_resol_prec_y;
-TGraph *g_bspt_prec_x;
-TGraph *g_bspt_prec_y;
+TGraphErrors *g_bspt_prec_x;
+TGraphErrors *g_bspt_prec_y;
 
 //Beam spot size
 float bspt_lof[2][NUMSEG] = {0};
@@ -111,8 +111,8 @@ float bspt_lof_err[2][NUMSEG] = {0};
 float bspt_prec_err[2][NUMSEG] = {0};
 TGraph *g_resol_lof_x;
 TGraph *g_resol_lof_y;
-TGraph *g_bspt_lof_x;
-TGraph *g_bspt_lof_y;
+TGraphErrors *g_bspt_lof_x;
+TGraphErrors *g_bspt_lof_y;
 
 //----------------------------------
 // Functions
@@ -125,22 +125,58 @@ void calculateResolution()
 		//resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
 		//resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
 
+		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i]*bspt_prec[0][i]);
+		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i]*bspt_prec[1][i]);
+
+		resol_prec_err[0][i] = f_gauss_fits_diff_prec_x[i]->GetParError(2) / 2.0;
+		resol_prec_err[1][i] = f_gauss_fits_diff_prec_y[i]->GetParError(2) / 2.0;
+
 		bspt_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2));
 		bspt_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2));
 
-		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i]*bspt_prec[0][i]);
-		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i]*bspt_prec[1][i]);
+		float err_prec_synth_x = f_gauss_fits_vtx_prec_synth_x[i]->GetParError(2);
+		float err_prec_synth_y = f_gauss_fits_vtx_prec_synth_y[i]->GetParError(2);
+		float err_prec_diff_x = f_gauss_fits_diff_prec_x[i]->GetParError(2);
+		float err_prec_diff_y = f_gauss_fits_diff_prec_y[i]->GetParError(2);
+
+		float aux_prec_synth_x_mult = f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * TMath::Sqrt(2 * (err_prec_synth_x / f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2)) * (err_prec_synth_x / f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2)));
+		float aux_prec_synth_y_mult = f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * TMath::Sqrt(2 * (err_prec_synth_y / f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2)) * (err_prec_synth_y / f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2)));
+		float aux_prec_diff_x_mult = f_gauss_fits_diff_prec_x[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_prec_diff_x / f_gauss_fits_diff_prec_x[i]->GetParameter(2)) * (err_prec_diff_x / f_gauss_fits_diff_prec_x[i]->GetParameter(2)));
+		float aux_prec_diff_y_mult = f_gauss_fits_diff_prec_y[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_prec_diff_y / f_gauss_fits_diff_prec_y[i]->GetParameter(2)) * (err_prec_diff_y / f_gauss_fits_diff_prec_y[i]->GetParameter(2)));
+
+		float aux_prec_x_sum = TMath::Sqrt(aux_prec_synth_x_mult * aux_prec_synth_x_mult + aux_prec_diff_x_mult * aux_prec_diff_x_mult);
+		float aux_prec_y_sum = TMath::Sqrt(aux_prec_synth_y_mult * aux_prec_synth_y_mult + aux_prec_diff_y_mult * aux_prec_diff_y_mult);
+
+		bspt_prec_err[0][i] = bspt_prec[0][i] * TMath::Sqrt(pow(2 * (aux_prec_x_sum) / (f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2)), 2));
+		bspt_prec_err[1][i] = bspt_prec[0][i] * TMath::Sqrt(pow(2 * (aux_prec_y_sum) / (f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2)), 2));
 
 		//resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
 		//resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
 
+		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i]*bspt_lof[0][i]);
+		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i]*bspt_lof[1][i]);
+
+		resol_lof_err[0][i] = f_gauss_fits_diff_lof_x[i]->GetParError(2) / 2.0;
+		resol_lof_err[1][i] = f_gauss_fits_diff_lof_y[i]->GetParError(2) / 2.0;
+
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
 
-		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i]*bspt_lof[0][i]);
-		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i]*bspt_lof[1][i]);
-				cout << resol_lof[0][i] << endl;
+		float err_lof_synth_x = f_gauss_fits_vtx_lof_synth_x[i]->GetParError(2);
+		float err_lof_synth_y = f_gauss_fits_vtx_lof_synth_y[i]->GetParError(2);
+		float err_lof_diff_x = f_gauss_fits_diff_lof_x[i]->GetParError(2);
+		float err_lof_diff_y = f_gauss_fits_diff_lof_y[i]->GetParError(2);
 
+		float aux_lof_synth_x_mult = f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * TMath::Sqrt(2 * (err_lof_synth_x / f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2)) * (err_lof_synth_x / f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2)));
+		float aux_lof_synth_y_mult = f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * TMath::Sqrt(2 * (err_lof_synth_y / f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2)) * (err_lof_synth_y / f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2)));
+		float aux_lof_diff_x_mult = f_gauss_fits_diff_lof_x[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_lof_diff_x / f_gauss_fits_diff_lof_x[i]->GetParameter(2)) * (err_lof_diff_x / f_gauss_fits_diff_lof_x[i]->GetParameter(2)));
+		float aux_lof_diff_y_mult = f_gauss_fits_diff_lof_y[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_lof_diff_y / f_gauss_fits_diff_lof_y[i]->GetParameter(2)) * (err_lof_diff_y / f_gauss_fits_diff_lof_y[i]->GetParameter(2)));
+
+		float aux_lof_x_sum = TMath::Sqrt(aux_lof_synth_x_mult * aux_lof_synth_x_mult + aux_lof_diff_x_mult * aux_lof_diff_x_mult);
+		float aux_lof_y_sum = TMath::Sqrt(aux_lof_synth_y_mult * aux_lof_synth_y_mult + aux_lof_diff_y_mult * aux_lof_diff_y_mult);
+
+		bspt_lof_err[0][i] = bspt_lof[0][i] * TMath::Sqrt(pow(2 * (aux_lof_x_sum) / (f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2)), 2));
+		bspt_lof_err[1][i] = bspt_lof[0][i] * TMath::Sqrt(pow(2 * (aux_lof_y_sum) / (f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2)), 2));
 	}
 }
 
@@ -305,8 +341,8 @@ void fitHistograms()
 	{
 		if (NUMSEG == 2 || NUMSEG == 3)
 		{
-			vertexRMS = 1.0;
-			vertexDiffRMS = 1.0;
+			vertexRMS = 0.8;
+			vertexDiffRMS = 0.8;
 		}
 
 		// --> Precise X
@@ -608,25 +644,25 @@ void readHistograms()
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		//Get vertex distribution from iterative algorithm
-		ntp_svxseg->Draw(Form("vtx_prec[0]>>h_prec_x_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec[0]>>h_prec_x_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_x[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec[1]>>h_prec_y_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec[1]>>h_prec_y_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_y[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_%i", i));
 
 		ntp_svxseg->Draw(Form("vtx_prec[2]>>h_prec_z_%i(150,-20,20)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_z[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_z_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_E[0]>>h_prec_x_E_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_E[0]>>h_prec_x_E_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_x_E[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_E_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_E[1]>>h_prec_y_E_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_E[1]>>h_prec_y_E_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_y_E[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_E_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_W[0]>>h_prec_x_W_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_W[0]>>h_prec_x_W_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_x_W[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_x_W_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_prec_W[1]>>h_prec_y_W_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_prec_W[1]>>h_prec_y_W_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_y_W[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_y_W_%i", i));
 
 		ntp_svxseg->Draw(Form("vtx_prec_E[0] - vtx_prec_W[0]>>h_ew_prec_x_%i(150,-0.3,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
@@ -638,32 +674,32 @@ void readHistograms()
 		ntp_svxseg->Draw(Form("vtx_prec_E[2] - vtx_prec_W[2]>>h_ew_prec_z_%i(150,-0.3,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_ew_prec_z[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_prec_z_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_prec_E[0] + vtx_prec_W[0])/2.0>>h_prec_synth_x_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_prec_E[0] + vtx_prec_W[0])/2.0>>h_prec_synth_x_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_synth_x[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_synth_x_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_prec_E[1] + vtx_prec_W[1])/2.0>>h_prec_synth_y_%i(150,-0.1,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_prec_E[1] + vtx_prec_W[1])/2.0>>h_prec_synth_y_%i(150,-0.05,0.3)", i), nseg_cuts_prec[i].c_str(), "goff");
 		h_prec_synth_y[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_synth_y_%i", i));
 
 		//Get vertex distributions from the LOF algorithm
-		ntp_svxseg->Draw(Form("vtx_lof[0]>>h_lof_x_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof[0]>>h_lof_x_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof[1]>>h_lof_y_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof[1]>>h_lof_y_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_%i", i));
 
 		ntp_svxseg->Draw(Form("vtx_lof[2]>>h_lof_z_%i(150,-20,20)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_z[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_z_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_E[0]>>h_lof_x_E_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_E[0]>>h_lof_x_E_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_x_E[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_E_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_E[1]>>h_lof_y_E_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_E[1]>>h_lof_y_E_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_y_E[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_E_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_W[0]>>h_lof_x_W_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_W[0]>>h_lof_x_W_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_x_W[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_x_W_%i", i));
 
-		ntp_svxseg->Draw(Form("vtx_lof_W[1]>>h_lof_y_W_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("vtx_lof_W[1]>>h_lof_y_W_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_y_W[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_y_W_%i", i));
 
 		ntp_svxseg->Draw(Form("vtx_lof_E[0] - vtx_lof_W[0]>>h_ew_lof_x_%i(150,-0.3,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
@@ -675,10 +711,10 @@ void readHistograms()
 		ntp_svxseg->Draw(Form("vtx_lof_E[2] - vtx_lof_W[2]>>h_ew_lof_z_%i(150,-0.3,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_ew_lof_z[i] = (TH1F*) gDirectory->FindObject(Form("h_ew_lof_z_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_lof_E[0] + vtx_lof_W[0])/2.0>>h_lof_synth_x_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_lof_E[0] + vtx_lof_W[0])/2.0>>h_lof_synth_x_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_synth_x[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_synth_x_%i", i));
 
-		ntp_svxseg->Draw(Form("(vtx_lof_E[1] + vtx_lof_W[1])/2.0>>h_lof_synth_y_%i(150,-0.1,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
+		ntp_svxseg->Draw(Form("(vtx_lof_E[1] + vtx_lof_W[1])/2.0>>h_lof_synth_y_%i(150,-0.05,0.3)", i), nseg_cuts_lof[i].c_str(), "goff");
 		h_lof_synth_y[i] = (TH1F*) gDirectory->FindObject(Form("h_lof_synth_y_%i", i));
 	}
 }
@@ -782,26 +818,40 @@ void plotBeamSpot()
 {
 	float x[NUMSEG] = {1, 2, 3, 4};
 
+	float err_x[NUMSEG] = {0};
+
 	float bspt_prec_x[NUMSEG];
 	float bspt_prec_y[NUMSEG];
 
+	float bspt_prec_er_x[NUMSEG];
+	float bspt_prec_er_y[NUMSEG];
+
 	float bspt_lof_x[NUMSEG];
 	float bspt_lof_y[NUMSEG];
+
+	float bspt_lof_er_x[NUMSEG];
+	float bspt_lof_er_y[NUMSEG];
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		bspt_prec_x[i] = bspt_prec[0][i];
 		bspt_prec_y[i] = bspt_prec[1][i];
 
+		bspt_prec_er_x[i] = bspt_prec_err[0][i];
+		bspt_prec_er_y[i] = bspt_prec_err[1][i];
+
 		bspt_lof_x[i] = bspt_lof[0][i];
 		bspt_lof_y[i] = bspt_lof[1][i];
+
+		bspt_lof_er_x[i] = bspt_lof_err[0][i];
+		bspt_lof_er_y[i] = bspt_lof_err[1][i];
 	}
 
-	g_bspt_prec_x = new TGraph(NUMSEG, x, bspt_prec_x);
-	g_bspt_prec_y = new TGraph(NUMSEG, x, bspt_prec_y);
+	g_bspt_prec_x = new TGraphErrors(NUMSEG, x, bspt_prec_x, err_x, bspt_prec_er_x);
+	g_bspt_prec_y = new TGraphErrors(NUMSEG, x, bspt_prec_y, err_x, bspt_prec_er_y);
 
-	g_bspt_lof_x = new TGraph(NUMSEG, x, bspt_lof_x);
-	g_bspt_lof_y = new TGraph(NUMSEG, x, bspt_lof_y);
+	g_bspt_lof_x = new TGraphErrors(NUMSEG, x, bspt_lof_x, err_x, bspt_lof_er_x);
+	g_bspt_lof_y = new TGraphErrors(NUMSEG, x, bspt_lof_y, err_x, bspt_lof_er_y);
 
 	TCanvas *cBspt = new TCanvas("cBspt", "cBspt", 900, 500);
 	cBspt->Divide(2, 1);
@@ -869,6 +919,96 @@ void plotBeamSpot()
 	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(4), "4");
 }
 
+void printParameters()
+{
+	//With no track requirement
+	cout << "-----------------------------------------" << endl;
+	cout << " NO TRACK REQUIREMENT" << endl;
+	cout << "-----------------------------------------" << endl << endl;
+
+	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParameter(2) << endl;
+	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[0]->GetParameter(2) << endl;
+	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[0]->GetParameter(2) << endl;
+	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[0]->GetParameter(2) << endl;
+	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[0]->GetParameter(2) << endl << endl;
+
+	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParameter(2) << endl;
+	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[0]->GetParameter(2) << endl;
+	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[0]->GetParameter(2) << endl;
+	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[0]->GetParameter(2) << endl;
+	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[0]->GetParameter(2) << endl << endl;
+
+	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParameter(2) << endl;
+	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[0]->GetParameter(2) << endl;
+	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[0]->GetParameter(2) << endl;
+	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[0]->GetParameter(2) << endl;
+	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[0]->GetParameter(2) << endl << endl;
+
+	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParameter(2) << endl;
+	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[0]->GetParameter(2) << endl;
+	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[0]->GetParameter(2) << endl;
+	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[0]->GetParameter(2) << endl;
+	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[0]->GetParameter(2) << endl << endl;
+
+	cout << "BS_x_prec        = " << 10000 * bspt_prec[0][0] << endl;
+	cout << "BS_y_prec        = " << 10000 * bspt_prec[1][0] << endl;
+	cout << "RE_x_prec        = " << 10000 * resol_prec[0][0] << endl;
+	cout << "RE_y_prec        = " << 10000 * resol_prec[1][0] << endl << endl;
+
+	cout << "BS_x_lof        = " << 10000 * bspt_lof[0][0] << endl;
+	cout << "BS_y_lof        = " << 10000 * bspt_lof[1][0] << endl;
+	cout << "RE_x_lof        = " << 10000 * resol_lof[0][0] << endl;
+	cout << "RE_y_lof        = " << 10000 * resol_lof[1][0] << endl << endl;
+
+	cout << "BC_x_prec       = " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParameter(1) << endl;
+	cout << "BC_y_prec       = " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParameter(1) << endl;
+	cout << "BC_x_lof       = " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParameter(1) << endl;
+	cout << "BC_y_lof       = " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParameter(1) << endl << endl;
+
+	cout << "-----------------------------------------" << endl;
+	cout << " TRACK REQUIREMENT = 2" << endl;
+	cout << "-----------------------------------------" << endl << endl;
+
+	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParameter(2) << endl;
+	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[1]->GetParameter(2) << endl;
+	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[1]->GetParameter(2) << endl;
+	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[1]->GetParameter(2) << endl;
+	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[1]->GetParameter(2) << endl << endl;
+
+	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParameter(2) << endl;
+	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[1]->GetParameter(2) << endl;
+	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[1]->GetParameter(2) << endl;
+	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[1]->GetParameter(2) << endl;
+	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[1]->GetParameter(2) << endl << endl;
+
+	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParameter(2) << endl;
+	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[1]->GetParameter(2) << endl;
+	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[1]->GetParameter(2) << endl;
+	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[1]->GetParameter(2) << endl;
+	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[1]->GetParameter(2) << endl << endl;
+
+	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(2) << endl;
+	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[1]->GetParameter(2) << endl;
+	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[1]->GetParameter(2) << endl;
+	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[1]->GetParameter(2) << endl;
+	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[1]->GetParameter(2) << endl << endl;
+
+	cout << "BS_x_prec        = " << 10000 * bspt_prec[0][1] << endl;
+	cout << "BS_y_prec        = " << 10000 * bspt_prec[1][1] << endl;
+	cout << "RE_x_prec        = " << 10000 * resol_prec[0][1] << endl;
+	cout << "RE_y_prec        = " << 10000 * resol_prec[1][1] << endl << endl;
+
+	cout << "BS_x_lof        = " << 10000 * bspt_lof[0][1] << endl;
+	cout << "BS_y_lof        = " << 10000 * bspt_lof[1][1] << endl;
+	cout << "RE_x_lof        = " << 10000 * resol_lof[0][1] << endl;
+	cout << "RE_y_lof        = " << 10000 * resol_lof[1][1] << endl << endl;
+
+	cout << "BC_x_prec       = " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParameter(1) << endl;
+	cout << "BC_y_prec       = " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParameter(1) << endl;
+	cout << "BC_x_lof       = " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParameter(1) << endl;
+	cout << "BC_y_lof       = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(1) << endl << endl;
+}
+
 void ComputeBeamSpot()
 {
 	readHistograms();
@@ -877,4 +1017,5 @@ void ComputeBeamSpot()
 	plotHistograms();
 	plotResolution();
 	plotBeamSpot();
+	printParameters();
 }
