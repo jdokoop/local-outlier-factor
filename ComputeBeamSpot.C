@@ -343,8 +343,8 @@ void fitHistograms()
 	{
 		if (NUMSEG == 2 || NUMSEG == 3)
 		{
-			vertexRMS = 0.8;
-			vertexDiffRMS = 0.8;
+			vertexRMS = 1.0;
+			vertexDiffRMS = 1.0;
 		}
 
 		// --> Precise X
