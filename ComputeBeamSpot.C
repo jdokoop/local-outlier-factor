@@ -99,8 +99,8 @@ float resol_lof[2][NUMSEG] = {0};
 float resol_prec[2][NUMSEG] = {0};
 float resol_lof_err[2][NUMSEG] = {0};
 float resol_prec_err[2][NUMSEG] = {0};
-TGraph *g_resol_prec_x;
-TGraph *g_resol_prec_y;
+TGraphErrors *g_resol_prec_x;
+TGraphErrors *g_resol_prec_y;
 TGraphErrors *g_bspt_prec_x;
 TGraphErrors *g_bspt_prec_y;
 
@@ -109,8 +109,8 @@ float bspt_lof[2][NUMSEG] = {0};
 float bspt_prec[2][NUMSEG] = {0};
 float bspt_lof_err[2][NUMSEG] = {0};
 float bspt_prec_err[2][NUMSEG] = {0};
-TGraph *g_resol_lof_x;
-TGraph *g_resol_lof_y;
+TGraphErrors *g_resol_lof_x;
+TGraphErrors *g_resol_lof_y;
 TGraphErrors *g_bspt_lof_x;
 TGraphErrors *g_bspt_lof_y;
 
@@ -122,61 +122,47 @@ void calculateResolution()
 {
 	for (int i = 0; i < NUMSEG; i++)
 	{
-		//resol_prec[0][i] = f_gauss_fits_diff_prec_x[i]->GetParameter(2) / 2.0;
-		//resol_prec[1][i] = f_gauss_fits_diff_prec_y[i]->GetParameter(2) / 2.0;
+		//Errors on quantities
+		float err_synth_prec_x = f_gauss_fits_vtx_prec_synth_x[i]->GetParError(2);
+		float err_synth_prec_y = f_gauss_fits_vtx_prec_synth_y[i]->GetParError(2);
+		float err_diff_prec_x  = f_gauss_fits_diff_prec_x[i]->GetParError(2);
+		float err_diff_prec_y  = f_gauss_fits_diff_prec_y[i]->GetParError(2);
 
+		float err_synth_lof_x = f_gauss_fits_vtx_lof_synth_x[i]->GetParError(2);
+		float err_synth_lof_y = f_gauss_fits_vtx_lof_synth_y[i]->GetParError(2);
+		float err_diff_lof_x  = f_gauss_fits_diff_lof_x[i]->GetParError(2);
+		float err_diff_lof_y  = f_gauss_fits_diff_lof_y[i]->GetParError(2);
+
+		float err_prec_x      = f_gauss_fits_vtx_prec_x[i]->GetParError(2);
+		float err_prec_y      = f_gauss_fits_vtx_prec_y[i]->GetParError(2);
+
+		float err_lof_x      = f_gauss_fits_vtx_lof_x[i]->GetParError(2);
+		float err_lof_y      = f_gauss_fits_vtx_lof_y[i]->GetParError(2);
+
+		//Calculation
 		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i] * bspt_prec[0][i]);
 		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i] * bspt_prec[1][i]);
-
-		resol_prec_err[0][i] = f_gauss_fits_diff_prec_x[i]->GetParError(2) / 2.0;
-		resol_prec_err[1][i] = f_gauss_fits_diff_prec_y[i]->GetParError(2) / 2.0;
 
 		bspt_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2));
 		bspt_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2));
 
-		float err_prec_synth_x = f_gauss_fits_vtx_prec_synth_x[i]->GetParError(2);
-		float err_prec_synth_y = f_gauss_fits_vtx_prec_synth_y[i]->GetParError(2);
-		float err_prec_diff_x = f_gauss_fits_diff_prec_x[i]->GetParError(2);
-		float err_prec_diff_y = f_gauss_fits_diff_prec_y[i]->GetParError(2);
+		bspt_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * err_synth_prec_x, 2) + pow(2 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * err_diff_prec_x, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_prec_x[i]->GetParameter(2), 2)));
+		bspt_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * err_synth_prec_y, 2) + pow(2 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * err_diff_prec_y, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_prec_y[i]->GetParameter(2), 2)));
 
-		float aux_prec_synth_x_mult = f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * TMath::Sqrt(2 * (err_prec_synth_x / f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2)) * (err_prec_synth_x / f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2)));
-		float aux_prec_synth_y_mult = f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * TMath::Sqrt(2 * (err_prec_synth_y / f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2)) * (err_prec_synth_y / f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2)));
-		float aux_prec_diff_x_mult = f_gauss_fits_diff_prec_x[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_prec_diff_x / f_gauss_fits_diff_prec_x[i]->GetParameter(2)) * (err_prec_diff_x / f_gauss_fits_diff_prec_x[i]->GetParameter(2)));
-		float aux_prec_diff_y_mult = f_gauss_fits_diff_prec_y[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_prec_diff_y / f_gauss_fits_diff_prec_y[i]->GetParameter(2)) * (err_prec_diff_y / f_gauss_fits_diff_prec_y[i]->GetParameter(2)));
-
-		float aux_prec_x_sum = TMath::Sqrt(aux_prec_synth_x_mult * aux_prec_synth_x_mult + aux_prec_diff_x_mult * aux_prec_diff_x_mult);
-		float aux_prec_y_sum = TMath::Sqrt(aux_prec_synth_y_mult * aux_prec_synth_y_mult + aux_prec_diff_y_mult * aux_prec_diff_y_mult);
-
-		bspt_prec_err[0][i] = bspt_prec[0][i] * TMath::Sqrt(pow(2 * (aux_prec_x_sum) / (f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2)), 2));
-		bspt_prec_err[1][i] = bspt_prec[0][i] * TMath::Sqrt(pow(2 * (aux_prec_y_sum) / (f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2)), 2));
-
-		//resol_lof[0][i] = f_gauss_fits_diff_lof_x[i]->GetParameter(2) / 2.0;
-		//resol_lof[1][i] = f_gauss_fits_diff_lof_y[i]->GetParameter(2) / 2.0;
+		resol_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * err_prec_x, 2) + pow(2 * bspt_prec[0][i] * bspt_prec_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2), 2) + pow(bspt_prec[0][i], 2)));
+		resol_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * err_prec_y, 2) + pow(2 * bspt_prec[1][i] * bspt_prec_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2), 2) + pow(bspt_prec[1][i], 2)));
 
 		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i] * bspt_lof[0][i]);
 		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i] * bspt_lof[1][i]);
 
-		resol_lof_err[0][i] = f_gauss_fits_diff_lof_x[i]->GetParError(2) / 2.0;
-		resol_lof_err[1][i] = f_gauss_fits_diff_lof_y[i]->GetParError(2) / 2.0;
-
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
 
-		float err_lof_synth_x = f_gauss_fits_vtx_lof_synth_x[i]->GetParError(2);
-		float err_lof_synth_y = f_gauss_fits_vtx_lof_synth_y[i]->GetParError(2);
-		float err_lof_diff_x = f_gauss_fits_diff_lof_x[i]->GetParError(2);
-		float err_lof_diff_y = f_gauss_fits_diff_lof_y[i]->GetParError(2);
+		bspt_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * err_synth_lof_x, 2) + pow(2 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * err_diff_lof_x, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_lof_x[i]->GetParameter(2), 2)));
+		bspt_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * err_synth_lof_y, 2) + pow(2 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * err_diff_lof_y, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_lof_y[i]->GetParameter(2), 2)));
 
-		float aux_lof_synth_x_mult = f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * TMath::Sqrt(2 * (err_lof_synth_x / f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2)) * (err_lof_synth_x / f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2)));
-		float aux_lof_synth_y_mult = f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * TMath::Sqrt(2 * (err_lof_synth_y / f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2)) * (err_lof_synth_y / f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2)));
-		float aux_lof_diff_x_mult = f_gauss_fits_diff_lof_x[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_lof_diff_x / f_gauss_fits_diff_lof_x[i]->GetParameter(2)) * (err_lof_diff_x / f_gauss_fits_diff_lof_x[i]->GetParameter(2)));
-		float aux_lof_diff_y_mult = f_gauss_fits_diff_lof_y[i]->GetParameter(2) * 0.25 * TMath::Sqrt(2 * (err_lof_diff_y / f_gauss_fits_diff_lof_y[i]->GetParameter(2)) * (err_lof_diff_y / f_gauss_fits_diff_lof_y[i]->GetParameter(2)));
-
-		float aux_lof_x_sum = TMath::Sqrt(aux_lof_synth_x_mult * aux_lof_synth_x_mult + aux_lof_diff_x_mult * aux_lof_diff_x_mult);
-		float aux_lof_y_sum = TMath::Sqrt(aux_lof_synth_y_mult * aux_lof_synth_y_mult + aux_lof_diff_y_mult * aux_lof_diff_y_mult);
-
-		bspt_lof_err[0][i] = bspt_lof[0][i] * TMath::Sqrt(pow(2 * (aux_lof_x_sum) / (f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2)), 2));
-		bspt_lof_err[1][i] = bspt_lof[0][i] * TMath::Sqrt(pow(2 * (aux_lof_y_sum) / (f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2)), 2));
+		resol_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * err_lof_x, 2) + pow(2 * bspt_lof[0][i] * bspt_lof_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2), 2) + pow(bspt_lof[0][i], 2)));
+		resol_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * err_lof_y, 2) + pow(2 * bspt_lof[1][i] * bspt_lof_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2), 2) + pow(bspt_lof[1][i], 2)));
 	}
 }
 
@@ -336,15 +322,15 @@ void fitHistograms()
 	double r1, r2;
 	double p0, p1, p2;
 
-	double vertexRMS = 0.8;
-	double vertexDiffRMS = 0.8;
+	double vertexRMS = 1.4;
+	double vertexDiffRMS = 1.4;
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		if (NUMSEG == 2 || NUMSEG == 3)
 		{
-			vertexRMS = 1.0;
-			vertexDiffRMS = 1.0;
+			vertexRMS = 1.4;
+			vertexDiffRMS = 1.4;
 		}
 
 		// --> Precise X
@@ -360,7 +346,15 @@ void fitHistograms()
 
 		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_x[i]->SetParameters(f_gauss_fits_vtx_prec_x[i]->GetParameter(0), f_gauss_fits_vtx_prec_x[i]->GetParameter(1), f_gauss_fits_vtx_prec_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_x[i]->SetRange(r1, r2);
 		h_prec_x[i]->Fit(Form("f_prec_x_%i", i), "Q0R");
 
 		// --> Precise X E
@@ -376,7 +370,15 @@ void fitHistograms()
 
 		h_prec_x_E[i]->Fit(Form("f_prec_x_E_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_x_E[i]->SetParameters(f_gauss_fits_vtx_prec_x_E[i]->GetParameter(0), f_gauss_fits_vtx_prec_x_E[i]->GetParameter(1), f_gauss_fits_vtx_prec_x_E[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_x_E[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_x_E[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_x_E[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_x_E[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_x_E[i]->SetRange(r1, r2);
 		h_prec_x_E[i]->Fit(Form("f_prec_x_E_%i", i), "Q0R");
 
 		// --> Precise X W
@@ -392,7 +394,15 @@ void fitHistograms()
 
 		h_prec_x_W[i]->Fit(Form("f_prec_x_W_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_x_W[i]->SetParameters(f_gauss_fits_vtx_prec_x_W[i]->GetParameter(0), f_gauss_fits_vtx_prec_x_W[i]->GetParameter(1), f_gauss_fits_vtx_prec_x_W[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_x_W[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_x_W[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_x_W[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_x_W[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_x_W[i]->SetRange(r1, r2);
 		h_prec_x_W[i]->Fit(Form("f_prec_x_W_%i", i), "Q0R");
 
 		// --> Synthetic Precise X
@@ -408,7 +418,15 @@ void fitHistograms()
 
 		h_prec_synth_x[i]->Fit(Form("f_prec_synth_x_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_synth_x[i]->SetParameters(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(0), f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(1), f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_synth_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_synth_x[i]->SetRange(r1, r2);
 		h_prec_synth_x[i]->Fit(Form("f_prec_synth_x_%i", i), "Q0R");
 
 		// --> Precise Y
@@ -424,10 +442,18 @@ void fitHistograms()
 
 		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_y[i]->SetParameters(f_gauss_fits_vtx_prec_y[i]->GetParameter(0), f_gauss_fits_vtx_prec_y[i]->GetParameter(1), f_gauss_fits_vtx_prec_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_y[i]->SetRange(r1, r2);
 		h_prec_y[i]->Fit(Form("f_prec_y_%i", i), "Q0R");
 
-		// --> Precise X E
+		// --> Precise Y E
 		p0 = h_prec_y_E[i]->GetMaximum();
 		p1 = h_prec_y_E[i]->GetMean();
 		p2 = vertexRMS * h_prec_y_E[i]->GetRMS();
@@ -440,10 +466,18 @@ void fitHistograms()
 
 		h_prec_y_E[i]->Fit(Form("f_prec_y_E_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_y_E[i]->SetParameters(f_gauss_fits_vtx_prec_y_E[i]->GetParameter(0), f_gauss_fits_vtx_prec_y_E[i]->GetParameter(1), f_gauss_fits_vtx_prec_y_E[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_y_E[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_y_E[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_y_E[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_y_E[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_y_E[i]->SetRange(r1, r2);
 		h_prec_y_E[i]->Fit(Form("f_prec_y_E_%i", i), "Q0R");
 
-		// --> Precise X W
+		// --> Precise Y W
 		p0 = h_prec_y_W[i]->GetMaximum();
 		p1 = h_prec_y_W[i]->GetMean();
 		p2 = vertexRMS * h_prec_y_W[i]->GetRMS();
@@ -456,7 +490,15 @@ void fitHistograms()
 
 		h_prec_y_W[i]->Fit(Form("f_prec_y_W_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_y_W[i]->SetParameters(f_gauss_fits_vtx_prec_y_W[i]->GetParameter(0), f_gauss_fits_vtx_prec_y_W[i]->GetParameter(1), f_gauss_fits_vtx_prec_y_W[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_y_W[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_y_W[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_y_W[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_y_W[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_y_W[i]->SetRange(r1, r2);
 		h_prec_y_W[i]->Fit(Form("f_prec_y_W_%i", i), "Q0R");
 
 		// --> Synthetic Precise Y
@@ -472,12 +514,19 @@ void fitHistograms()
 
 		h_prec_synth_y[i]->Fit(Form("f_prec_synth_y_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_prec_synth_y[i]->SetParameters(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(0), f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(1), f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_synth_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_synth_y[i]->SetRange(r1, r2);
 		h_prec_synth_y[i]->Fit(Form("f_prec_synth_y_%i", i), "Q0R");
 
 		// --> Precise E-W X
 		p0 = h_ew_prec_x[i]->GetMaximum();
-		//p1 = h_ew_prec_x[i]->GetBinCenter(h_ew_prec_x[i]->GetMaximumBin());
 		p1 = h_ew_prec_x[i]->GetMean();
 		p2 = vertexDiffRMS * h_ew_prec_x[i]->GetRMS();
 
@@ -489,12 +538,19 @@ void fitHistograms()
 
 		h_ew_prec_x[i]->Fit(Form("f_ew_prec_x_%i", i), "Q0R");
 
-		f_gauss_fits_diff_prec_x[i]->SetParameters(f_gauss_fits_diff_prec_x[i]->GetParameter(0), f_gauss_fits_diff_prec_x[i]->GetParameter(1), f_gauss_fits_diff_prec_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_prec_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_prec_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_prec_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_prec_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_x[i]->SetRange(r1, r2);
 		h_ew_prec_x[i]->Fit(Form("f_ew_prec_x_%i", i), "Q0R");
 
 		// --> Precise E-W Y
 		p0 = h_ew_prec_y[i]->GetMaximum();
-		//p1 = h_ew_prec_y[i]->GetBinCenter(h_ew_prec_y[i]->GetMaximumBin());
 		p1 = h_ew_prec_y[i]->GetMean();
 		p2 = vertexDiffRMS * h_ew_prec_y[i]->GetRMS();
 
@@ -506,12 +562,19 @@ void fitHistograms()
 
 		h_ew_prec_y[i]->Fit(Form("f_ew_prec_y_%i", i), "Q0R");
 
-		f_gauss_fits_diff_prec_y[i]->SetParameters(f_gauss_fits_diff_prec_y[i]->GetParameter(0), f_gauss_fits_diff_prec_y[i]->GetParameter(1), f_gauss_fits_diff_prec_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_prec_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_prec_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_prec_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_prec_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_y[i]->SetRange(r1, r2);
 		h_ew_prec_y[i]->Fit(Form("f_ew_prec_y_%i", i), "Q0R");
 
 		// --> Precise E-W Z
 		p0 = h_ew_prec_z[i]->GetMaximum();
-		//p1 = h_ew_prec_z[i]->GetBinCenter(h_ew_prec_z[i]->GetMaximumBin());
 		p1 = h_ew_prec_z[i]->GetMean();
 		p2 = vertexDiffRMS * h_ew_prec_z[i]->GetRMS();
 
@@ -523,7 +586,15 @@ void fitHistograms()
 
 		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
 
-		f_gauss_fits_diff_prec_z[i]->SetParameters(f_gauss_fits_diff_prec_z[i]->GetParameter(0), f_gauss_fits_diff_prec_z[i]->GetParameter(1), f_gauss_fits_diff_prec_z[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_prec_z[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_prec_z[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_prec_z[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_prec_z[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_prec_z[i]->SetRange(r1, r2);
 		h_ew_prec_z[i]->Fit(Form("f_ew_prec_z_%i", i), "Q0R");
 
 		// --> LOF X
@@ -539,7 +610,15 @@ void fitHistograms()
 
 		h_lof_x[i]->Fit(Form("f_lof_x_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_x[i]->SetParameters(f_gauss_fits_vtx_lof_x[i]->GetParameter(0), f_gauss_fits_vtx_lof_x[i]->GetParameter(1), f_gauss_fits_vtx_lof_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_x[i]->SetRange(r1, r2);
 		h_lof_x[i]->Fit(Form("f_lof_x_%i", i), "Q0R");
 
 		// --> Synthetic LOF X
@@ -555,7 +634,15 @@ void fitHistograms()
 
 		h_lof_synth_x[i]->Fit(Form("f_lof_synth_x_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_synth_x[i]->SetParameters(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(0), f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(1), f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_synth_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_synth_x[i]->SetRange(r1, r2);
 		h_lof_synth_x[i]->Fit(Form("f_lof_synth_x_%i", i), "Q0R");
 
 		// --> LOF X E
@@ -571,7 +658,15 @@ void fitHistograms()
 
 		h_lof_x_E[i]->Fit(Form("f_lof_x_E_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_x_E[i]->SetParameters(f_gauss_fits_vtx_lof_x_E[i]->GetParameter(0), f_gauss_fits_vtx_lof_x_E[i]->GetParameter(1), f_gauss_fits_vtx_lof_x_E[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_x_E[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_x_E[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_x_E[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x_E[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_x_E[i]->SetRange(r1, r2);
 		h_lof_x_E[i]->Fit(Form("f_lof_x_E_%i", i), "Q0R");
 
 		// --> LOF X W
@@ -587,7 +682,15 @@ void fitHistograms()
 
 		h_lof_x_W[i]->Fit(Form("f_lof_x_W_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_x_W[i]->SetParameters(f_gauss_fits_vtx_lof_x_W[i]->GetParameter(0), f_gauss_fits_vtx_lof_x_W[i]->GetParameter(1), f_gauss_fits_vtx_lof_x_W[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_x_W[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_x_W[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_x_W[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_x_W[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_x_W[i]->SetRange(r1, r2);
 		h_lof_x_W[i]->Fit(Form("f_lof_x_W_%i", i), "Q0R");
 
 		// --> LOF Y
@@ -603,7 +706,15 @@ void fitHistograms()
 
 		h_lof_y[i]->Fit(Form("f_lof_y_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_y[i]->SetParameters(f_gauss_fits_vtx_lof_y[i]->GetParameter(0), f_gauss_fits_vtx_lof_y[i]->GetParameter(1), f_gauss_fits_vtx_lof_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_y[i]->SetRange(r1, r2);
 		h_lof_y[i]->Fit(Form("f_lof_y_%i", i), "Q0R");
 
 		// --> Synthetic LOF Y
@@ -619,7 +730,15 @@ void fitHistograms()
 
 		h_lof_synth_y[i]->Fit(Form("f_lof_synth_y_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_synth_y[i]->SetParameters(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(0), f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(1), f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_synth_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_synth_y[i]->SetRange(r1, r2);
 		h_lof_synth_y[i]->Fit(Form("f_lof_synth_y_%i", i), "Q0R");
 
 		// --> LOF Y E
@@ -635,7 +754,15 @@ void fitHistograms()
 
 		h_lof_y_E[i]->Fit(Form("f_lof_y_E_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_y_E[i]->SetParameters(f_gauss_fits_vtx_lof_y_E[i]->GetParameter(0), f_gauss_fits_vtx_lof_y_E[i]->GetParameter(1), f_gauss_fits_vtx_lof_y_E[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_y_E[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_y_E[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_y_E[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y_E[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_y_E[i]->SetRange(r1, r2);
 		h_lof_y_E[i]->Fit(Form("f_lof_y_E_%i", i), "Q0R");
 
 		// --> LOF Y W
@@ -651,7 +778,15 @@ void fitHistograms()
 
 		h_lof_y_W[i]->Fit(Form("f_lof_y_W_%i", i), "Q0R");
 
-		f_gauss_fits_vtx_lof_y_W[i]->SetParameters(f_gauss_fits_vtx_lof_y_W[i]->GetParameter(0), f_gauss_fits_vtx_lof_y_W[i]->GetParameter(1), f_gauss_fits_vtx_lof_y_W[i]->GetParameter(2));
+		p0 = f_gauss_fits_vtx_lof_y_W[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_lof_y_W[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_lof_y_W[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_lof_y_W[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_lof_y_W[i]->SetRange(r1, r2);
 		h_lof_y_W[i]->Fit(Form("f_lof_y_W_%i", i), "Q0R");
 
 		// --> LOF E-W X
@@ -667,7 +802,15 @@ void fitHistograms()
 
 		h_ew_lof_x[i]->Fit(Form("f_ew_lof_x_%i", i), "Q0R");
 
-		f_gauss_fits_diff_lof_x[i]->SetParameters(f_gauss_fits_diff_lof_x[i]->GetParameter(0), f_gauss_fits_diff_lof_x[i]->GetParameter(1), f_gauss_fits_diff_lof_x[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_lof_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_lof_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_lof_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_lof_x[i]->SetRange(r1, r2);
 		h_ew_lof_x[i]->Fit(Form("f_ew_lof_x_%i", i), "Q0R");
 
 		// --> LOF E-W Y
@@ -683,7 +826,15 @@ void fitHistograms()
 
 		h_ew_lof_y[i]->Fit(Form("f_ew_lof_y_%i", i), "Q0R");
 
-		f_gauss_fits_diff_lof_y[i]->SetParameters(f_gauss_fits_diff_lof_y[i]->GetParameter(0), f_gauss_fits_diff_lof_y[i]->GetParameter(1), f_gauss_fits_diff_lof_y[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_lof_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_lof_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_lof_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_lof_y[i]->SetRange(r1, r2);
 		h_ew_lof_y[i]->Fit(Form("f_ew_lof_y_%i", i), "Q0R");
 
 		// --> LOF E-W Z
@@ -699,7 +850,15 @@ void fitHistograms()
 
 		h_ew_lof_z[i]->Fit(Form("f_ew_lof_z_%i", i), "Q0R");
 
-		f_gauss_fits_diff_lof_z[i]->SetParameters(f_gauss_fits_diff_lof_z[i]->GetParameter(0), f_gauss_fits_diff_lof_z[i]->GetParameter(1), f_gauss_fits_diff_lof_z[i]->GetParameter(2));
+		p0 = f_gauss_fits_diff_lof_z[i]->GetParameter(0);
+		p1 = f_gauss_fits_diff_lof_z[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_diff_lof_z[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_diff_lof_z[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_diff_lof_z[i]->SetRange(r1, r2);
 		h_ew_lof_z[i]->Fit(Form("f_ew_lof_z_%i", i), "Q0R");
 	}
 }
@@ -790,6 +949,7 @@ void readHistograms()
 void plotResolution()
 {
 	float x[NUMSEG] = {1, 2, 3, 4};
+	float err_x[NUMSEG] = {0};
 
 	float resol_prec_x[NUMSEG];
 	float resol_prec_y[NUMSEG];
@@ -808,13 +968,19 @@ void plotResolution()
 
 		resol_lof_x[i] = resol_lof[0][i];
 		resol_lof_y[i] = resol_lof[1][i];
+
+		resol_prec_x_err[i] = resol_prec_err[0][i];
+		resol_prec_y_err[i] = resol_prec_err[1][i];
+
+		resol_lof_x_err[i] = resol_lof_err[0][i];
+		resol_lof_y_err[i] = resol_lof_err[1][i];
 	}
 
-	g_resol_prec_x = new TGraph(NUMSEG, x, resol_prec_x);
-	g_resol_prec_y = new TGraph(NUMSEG, x, resol_prec_y);
+	g_resol_prec_x = new TGraphErrors(NUMSEG, x, resol_prec_x, err_x, resol_prec_x_err);
+	g_resol_prec_y = new TGraphErrors(NUMSEG, x, resol_prec_y, err_x, resol_prec_y_err);
 
-	g_resol_lof_x = new TGraph(NUMSEG, x, resol_lof_x);
-	g_resol_lof_y = new TGraph(NUMSEG, x, resol_lof_y);
+	g_resol_lof_x = new TGraphErrors(NUMSEG, x, resol_lof_x, err_x, resol_lof_x_err);
+	g_resol_lof_y = new TGraphErrors(NUMSEG, x, resol_lof_y, err_x, resol_lof_y_err);
 
 	TCanvas *cResol = new TCanvas("cResol", "cResol", 900, 500);
 	cResol->Divide(2, 1);
