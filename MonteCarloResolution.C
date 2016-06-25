@@ -10,33 +10,62 @@ TH1F *h_total;
 TH1F *h_resol;
 TH1F *h_beam;
 
-const float SIGMA_RES_X = 2.0;
-const float SIGMA_RES_Y = 2.0;
+//Vertexing resolution
+const float SIGMA_RES_X = 3.0;
+const float SIGMA_RES_Y = 3.0;
 
+//Beam spot spread
 const float SIGMA_BEAM_X = 3.0;
 const float SIGMA_BEAM_Y = 3.0;
 
+//Beam spot spread
 const float BEAM_CTR_X = 0.0;
 const float BEAM_CTR_Y = 0.0;
 
-const int NPOINTS = 100000;
+//Number of events to simulate
+const int NPOINTS = 500000;
+
+//Number of times the vertex falls outside of the beam spot
+int nPointsOut = 0;
 
 //-------------------------------
 // Functions
 //-------------------------------
 
+/*
+ * Determine whether a point with coordinates x,y
+ * is contained within the ellipse of the beam spot
+ */
+bool isOutsideBeamSpot(float x, float y)
+{
+	if (x > SIGMA_BEAM_X && y > SIGMA_BEAM_Y)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void MonteCarloResolution()
 {
 	TRandom rndm(0);
 
-	for(int i=0; i<NPOINTS; i++)
+	for (int i = 0; i < NPOINTS; i++)
 	{
 		//Generate true vertex by sampling around the beam center
-		float vtx_true_x = rndm.Gaus(BEAM_CTR_X,SIGMA_BEAM_X);
-		float vtx_true_y = rndm.Gaus(BEAM_CTR_Y,SIGMA_BEAM_Y);
+		float vtx_true_x = rndm.Gaus(BEAM_CTR_X, SIGMA_BEAM_X);
+		float vtx_true_y = rndm.Gaus(BEAM_CTR_Y, SIGMA_BEAM_Y);
 
 		//Generate the reconstructed vertex by sampling around the collision point
-		float vtx_reco_x = rndm.Gaus(vtx_true_x,SIGMA_RES_X);
-		float vtx_reco_y = rndm.Gaus(vtx_true_y,SIGMA_RES_Y);
+		float vtx_reco_x = rndm.Gaus(vtx_true_x, SIGMA_RES_X);
+		float vtx_reco_y = rndm.Gaus(vtx_true_y, SIGMA_RES_Y);
+
+		//Determine if the reconstructed vertex falls outside the beam spot
+		if (isOutsideBeamSpot(vtx_reco_x, vtx_reco_y))
+		{
+			nPointsOut++;
+		}
 	}
+
+	cout << "Probability of Outside Reconstruction = " << (float) 100*nPointsOut / NPOINTS << endl;
 }
