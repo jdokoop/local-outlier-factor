@@ -103,6 +103,10 @@ TGraphErrors *g_resol_prec_x;
 TGraphErrors *g_resol_prec_y;
 TGraphErrors *g_bspt_prec_x;
 TGraphErrors *g_bspt_prec_y;
+TGraph *g_resol_prec_x_aux;
+TGraph *g_resol_prec_y_aux;
+TGraph *g_bspt_prec_x_aux;
+TGraph *g_bspt_prec_y_aux;
 
 //Beam spot size
 float bspt_lof[2][NUMSEG] = {0};
@@ -113,6 +117,10 @@ TGraphErrors *g_resol_lof_x;
 TGraphErrors *g_resol_lof_y;
 TGraphErrors *g_bspt_lof_x;
 TGraphErrors *g_bspt_lof_y;
+TGraph *g_resol_lof_x_aux;
+TGraph *g_resol_lof_y_aux;
+TGraph *g_bspt_lof_x_aux;
+TGraph *g_bspt_lof_y_aux;
 
 //----------------------------------
 // Functions
@@ -949,15 +957,20 @@ void readHistograms()
 void plotResolution()
 {
 	float x[NUMSEG] = {1, 2, 3, 4};
+	float x_aux[NUMSEG - 1] = {2, 3, 4};
 	float err_x[NUMSEG] = {0};
 
 	float resol_prec_x[NUMSEG];
 	float resol_prec_y[NUMSEG];
+	float resol_prec_x_aux[NUMSEG - 1];
+	float resol_prec_y_aux[NUMSEG - 1];
 	float resol_prec_x_err[NUMSEG];
 	float resol_prec_y_err[NUMSEG];
 
 	float resol_lof_x[NUMSEG];
 	float resol_lof_y[NUMSEG];
+	float resol_lof_x_aux[NUMSEG - 1];
+	float resol_lof_y_aux[NUMSEG - 1];
 	float resol_lof_x_err[NUMSEG];
 	float resol_lof_y_err[NUMSEG];
 
@@ -968,6 +981,15 @@ void plotResolution()
 
 		resol_lof_x[i] = resol_lof[0][i];
 		resol_lof_y[i] = resol_lof[1][i];
+
+		if (i > 0)
+		{
+			resol_prec_x_aux[i - 1] = resol_prec[0][i];
+			resol_prec_y_aux[i - 1] = resol_prec[1][i];
+
+			resol_lof_x_aux[i - 1] = resol_lof[0][i];
+			resol_lof_y_aux[i - 1] = resol_lof[1][i];
+		}
 
 		resol_prec_x_err[i] = resol_prec_err[0][i];
 		resol_prec_y_err[i] = resol_prec_err[1][i];
@@ -982,6 +1004,12 @@ void plotResolution()
 	g_resol_lof_x = new TGraphErrors(NUMSEG, x, resol_lof_x, err_x, resol_lof_x_err);
 	g_resol_lof_y = new TGraphErrors(NUMSEG, x, resol_lof_y, err_x, resol_lof_y_err);
 
+	g_resol_prec_x_aux = new TGraphErrors(NUMSEG - 1, x_aux, resol_prec_x_aux);
+	g_resol_prec_y_aux = new TGraphErrors(NUMSEG - 1, x_aux, resol_prec_y_aux);
+
+	g_resol_lof_x_aux = new TGraphErrors(NUMSEG - 1, x_aux, resol_lof_x_aux);
+	g_resol_lof_y_aux = new TGraphErrors(NUMSEG - 1, x_aux, resol_lof_y_aux);
+
 	TCanvas *cResol = new TCanvas("cResol", "cResol", 900, 500);
 	cResol->Divide(2, 1);
 	cResol->cd(1);
@@ -991,7 +1019,7 @@ void plotResolution()
 	g_resol_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_resol_prec_x->GetXaxis()->SetTitleFont(62);
 	g_resol_prec_x->GetXaxis()->SetLabelFont(62);
-	g_resol_prec_x->GetYaxis()->SetTitle("#sigma_{resolution} [cm]");
+	g_resol_prec_x->GetYaxis()->SetTitle("#sigma_{res} [cm]");
 	g_resol_prec_x->GetYaxis()->SetTitleOffset(1.85);
 	g_resol_prec_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_resol_prec_x->GetYaxis()->SetTitleFont(62);
@@ -1001,6 +1029,16 @@ void plotResolution()
 	g_resol_prec_y->SetLineColor(kBlue);
 	g_resol_prec_y->SetMarkerColor(kBlue);
 	g_resol_prec_y->Draw("P,same");
+	g_resol_prec_y_aux->SetMarkerStyle(20);
+	g_resol_prec_y_aux->SetLineStyle(2);
+	g_resol_prec_y_aux->SetLineColor(kBlue);
+	g_resol_prec_y_aux->SetMarkerColor(kBlue);
+	g_resol_prec_y_aux->Draw("LP,same");
+	g_resol_prec_x_aux->SetMarkerStyle(20);
+	g_resol_prec_x_aux->SetLineStyle(2);
+	g_resol_prec_x_aux->SetLineColor(kBlack);
+	g_resol_prec_x_aux->SetMarkerColor(kBlack);
+	g_resol_prec_x_aux->Draw("LP,same");
 
 	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(1), "ANY");
 	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(2), "2");
@@ -1019,6 +1057,10 @@ void plotResolution()
 	tlg_resol_prec->SetTextSize(0.05);
 	tlg_resol_prec->Draw("same");
 
+	TLine *tlineDivAny = new TLine(1.5, 0, 1.5, 0.025);
+	tlineDivAny->SetLineStyle(2);
+	tlineDivAny->Draw("same");
+
 	cResol->cd(2);
 	gPad->SetGridy();
 	g_resol_lof_x->SetTitle("LOF");
@@ -1026,7 +1068,7 @@ void plotResolution()
 	g_resol_lof_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_resol_lof_x->GetXaxis()->SetTitleFont(62);
 	g_resol_lof_x->GetXaxis()->SetLabelFont(62);
-	g_resol_lof_x->GetYaxis()->SetTitle("#sigma_{resolution} [cm]");
+	g_resol_lof_x->GetYaxis()->SetTitle("#sigma_{res} [cm]");
 	g_resol_lof_x->GetYaxis()->SetTitleOffset(1.85);
 	g_resol_lof_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_resol_lof_x->GetYaxis()->SetTitleFont(62);
@@ -1036,6 +1078,16 @@ void plotResolution()
 	g_resol_lof_y->SetLineColor(kBlue);
 	g_resol_lof_y->SetMarkerColor(kBlue);
 	g_resol_lof_y->Draw("P,same");
+	g_resol_lof_y_aux->SetMarkerStyle(20);
+	g_resol_lof_y_aux->SetLineStyle(2);
+	g_resol_lof_y_aux->SetLineColor(kBlue);
+	g_resol_lof_y_aux->SetMarkerColor(kBlue);
+	g_resol_lof_y_aux->Draw("LP,same");
+	g_resol_lof_x_aux->SetMarkerStyle(20);
+	g_resol_lof_x_aux->SetLineStyle(2);
+	g_resol_lof_x_aux->SetLineColor(kBlack);
+	g_resol_lof_x_aux->SetMarkerColor(kBlack);
+	g_resol_lof_x_aux->Draw("LP,same");
 
 	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(1), "ANY");
 	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(2), "2");
@@ -1046,22 +1098,29 @@ void plotResolution()
 	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(2), "2");
 	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(3), "3");
 	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(4), "4");
+
+	tlineDivAny->Draw("same");
 }
 
 void plotBeamSpot()
 {
 	float x[NUMSEG] = {1, 2, 3, 4};
+	float x_aux[NUMSEG - 1] = {2, 3, 4};
 
 	float err_x[NUMSEG] = {0};
 
 	float bspt_prec_x[NUMSEG];
 	float bspt_prec_y[NUMSEG];
+	float bspt_prec_x_aux[NUMSEG - 1];
+	float bspt_prec_y_aux[NUMSEG - 1];
 
 	float bspt_prec_er_x[NUMSEG];
 	float bspt_prec_er_y[NUMSEG];
 
 	float bspt_lof_x[NUMSEG];
 	float bspt_lof_y[NUMSEG];
+	float bspt_lof_x_aux[NUMSEG - 1];
+	float bspt_lof_y_aux[NUMSEG - 1];
 
 	float bspt_lof_er_x[NUMSEG];
 	float bspt_lof_er_y[NUMSEG];
@@ -1079,6 +1138,15 @@ void plotBeamSpot()
 
 		bspt_lof_er_x[i] = bspt_lof_err[0][i];
 		bspt_lof_er_y[i] = bspt_lof_err[1][i];
+
+		if (i > 0)
+		{
+			bspt_prec_x_aux[i - 1] = bspt_prec[0][i];
+			bspt_prec_y_aux[i - 1] = bspt_prec[1][i];
+
+			bspt_lof_x_aux[i - 1] = bspt_lof[0][i];
+			bspt_lof_y_aux[i - 1] = bspt_lof[1][i];
+		}
 	}
 
 	g_bspt_prec_x = new TGraphErrors(NUMSEG, x, bspt_prec_x, err_x, bspt_prec_er_x);
@@ -1086,6 +1154,13 @@ void plotBeamSpot()
 
 	g_bspt_lof_x = new TGraphErrors(NUMSEG, x, bspt_lof_x, err_x, bspt_lof_er_x);
 	g_bspt_lof_y = new TGraphErrors(NUMSEG, x, bspt_lof_y, err_x, bspt_lof_er_y);
+
+	g_bspt_prec_x_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_prec_x_aux);
+	g_bspt_prec_y_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_prec_y_aux);
+
+	g_bspt_lof_x_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_lof_x_aux);
+	g_bspt_lof_y_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_lof_y_aux);
+
 
 	TCanvas *cBspt = new TCanvas("cBspt", "cBspt", 900, 500);
 	cBspt->Divide(2, 1);
@@ -1096,7 +1171,7 @@ void plotBeamSpot()
 	g_bspt_prec_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_bspt_prec_x->GetXaxis()->SetTitleFont(62);
 	g_bspt_prec_x->GetXaxis()->SetLabelFont(62);
-	g_bspt_prec_x->GetYaxis()->SetTitle("#sigma_{beam} [cm]");
+	g_bspt_prec_x->GetYaxis()->SetTitle("#sigma_{b} [cm]");
 	g_bspt_prec_x->GetYaxis()->SetTitleOffset(1.85);
 	g_bspt_prec_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_bspt_prec_x->GetYaxis()->SetTitleFont(62);
@@ -1106,6 +1181,16 @@ void plotBeamSpot()
 	g_bspt_prec_y->SetLineColor(kBlue);
 	g_bspt_prec_y->SetMarkerColor(kBlue);
 	g_bspt_prec_y->Draw("P,same");
+	g_bspt_prec_y_aux->SetMarkerStyle(20);
+	g_bspt_prec_y_aux->SetLineStyle(2);
+	g_bspt_prec_y_aux->SetLineColor(kBlue);
+	g_bspt_prec_y_aux->SetMarkerColor(kBlue);
+	g_bspt_prec_y_aux->Draw("LP,same");
+	g_bspt_prec_x_aux->SetMarkerStyle(20);
+	g_bspt_prec_x_aux->SetLineStyle(2);
+	g_bspt_prec_x_aux->SetLineColor(kBlack);
+	g_bspt_prec_x_aux->SetMarkerColor(kBlack);
+	g_bspt_prec_x_aux->Draw("LP,same");
 
 	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(1), "ANY");
 	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(2), "2");
@@ -1124,6 +1209,10 @@ void plotBeamSpot()
 	tlg_bspt_prec->SetTextSize(0.05);
 	tlg_bspt_prec->Draw("same");
 
+	TLine *tlineDivAny = new TLine(1.5, 0, 1.5, 0.025);
+	tlineDivAny->SetLineStyle(2);
+	tlineDivAny->Draw("same");
+
 	cBspt->cd(2);
 	gPad->SetGridy();
 	g_bspt_lof_x->SetTitle("LOF");
@@ -1141,6 +1230,16 @@ void plotBeamSpot()
 	g_bspt_lof_y->SetLineColor(kBlue);
 	g_bspt_lof_y->SetMarkerColor(kBlue);
 	g_bspt_lof_y->Draw("P,same");
+	g_bspt_lof_y_aux->SetMarkerStyle(20);
+	g_bspt_lof_y_aux->SetLineStyle(2);
+	g_bspt_lof_y_aux->SetLineColor(kBlue);
+	g_bspt_lof_y_aux->SetMarkerColor(kBlue);
+	g_bspt_lof_y_aux->Draw("LP,same");
+	g_bspt_lof_x_aux->SetMarkerStyle(20);
+	g_bspt_lof_x_aux->SetLineStyle(2);
+	g_bspt_lof_x_aux->SetLineColor(kBlack);
+	g_bspt_lof_x_aux->SetMarkerColor(kBlack);
+	g_bspt_lof_x_aux->Draw("LP,same");
 
 	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(1), "ANY");
 	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(2), "2");
@@ -1151,6 +1250,8 @@ void plotBeamSpot()
 	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(2), "2");
 	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(3), "3");
 	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(4), "4");
+
+	tlineDivAny->Draw("same");
 }
 
 void printParameters()
@@ -1160,29 +1261,35 @@ void printParameters()
 	cout << " NO TRACK REQUIREMENT" << endl;
 	cout << "-----------------------------------------" << endl << endl;
 
-	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParameter(2) << endl;
-	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[0]->GetParameter(2) << endl;
-	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[0]->GetParameter(2) << endl;
-	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[0]->GetParameter(2) << endl;
-	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[0]->GetParameter(2) << endl << endl;
+	cout << "**BC_prec_x  = " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParError(1) << endl;
+	cout << "**BC_prec_y  = " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParError(1) << endl << endl;
 
-	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParameter(2) << endl;
-	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[0]->GetParameter(2) << endl;
-	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[0]->GetParameter(2) << endl;
-	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[0]->GetParameter(2) << endl;
-	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[0]->GetParameter(2) << endl << endl;
+	cout << "**BC_lof_x  = " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParError(1) << endl;
+	cout << "**BC_lof_y  = " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParameter(1) << " +/- " << 10000 * 10000 * f_gauss_fits_vtx_lof_y[0]->GetParError(1) << endl << endl;
 
-	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParameter(2) << endl;
-	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[0]->GetParameter(2) << endl;
-	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[0]->GetParameter(2) << endl;
-	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[0]->GetParameter(2) << endl;
-	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[0]->GetParameter(2) << endl << endl;
+	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x[0]->GetParError(2) << endl;
+	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x_E[0]->GetParError(2) << endl;
+	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x_W[0]->GetParError(2) << endl;
+	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[0]->GetParameter(2) << " +/- " << 10000 * 10000 * f_gauss_fits_vtx_prec_synth_x[0]->GetParError(2) << endl;
+	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_x[0]->GetParError(2) << endl << endl;
 
-	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParameter(2) << endl;
-	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[0]->GetParameter(2) << endl;
-	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[0]->GetParameter(2) << endl;
-	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[0]->GetParameter(2) << endl;
-	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[0]->GetParameter(2) << endl << endl;
+	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x[0]->GetParError(2) << endl;
+	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x_E[0]->GetParError(2) << endl;
+	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x_W[0]->GetParError(2) << endl;
+	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_diff_lof_x[0]->GetParError(2) << endl;
+	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_synth_x[0]->GetParError(2) << endl << endl;
+
+	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y[0]->GetParError(2) << endl;
+	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y_E[0]->GetParError(2) << endl;
+	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y_W[0]->GetParError(2) << endl;
+	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_y[0]->GetParError(2) << endl;
+	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[0]->GetParameter(2) << " +/- " << f_gauss_fits_vtx_prec_synth_y[0]->GetParError(2) << endl << endl;
+
+	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y[0]->GetParError(2) << endl;
+	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y_E[0]->GetParError(2) << endl;
+	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y_W[0]->GetParError(2) << endl;
+	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_diff_lof_y[0]->GetParError(2) << endl;
+	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[0]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_synth_y[0]->GetParError(2) << endl << endl;
 
 	cout << "BS_x_prec        = " << 10000 * bspt_prec[0][0] << endl;
 	cout << "BS_y_prec        = " << 10000 * bspt_prec[1][0] << endl;
@@ -1203,29 +1310,35 @@ void printParameters()
 	cout << " TRACK REQUIREMENT = 2" << endl;
 	cout << "-----------------------------------------" << endl << endl;
 
-	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParameter(2) << endl;
-	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[1]->GetParameter(2) << endl;
-	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[1]->GetParameter(2) << endl;
-	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[1]->GetParameter(2) << endl;
-	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[1]->GetParameter(2) << endl << endl;
+	cout << "**BC_prec_x  = " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParError(1) << endl;
+	cout << "**BC_prec_y  = " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParError(1) << endl << endl;
 
-	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParameter(2) << endl;
-	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[1]->GetParameter(2) << endl;
-	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[1]->GetParameter(2) << endl;
-	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[1]->GetParameter(2) << endl;
-	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[1]->GetParameter(2) << endl << endl;
+	cout << "**BC_lof_x  = " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParError(1) << endl;
+	cout << "**BC_lof_y  = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(1) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParError(1) << endl << endl;
 
-	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParameter(2) << endl;
-	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[1]->GetParameter(2) << endl;
-	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[1]->GetParameter(2) << endl;
-	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[1]->GetParameter(2) << endl;
-	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[1]->GetParameter(2) << endl << endl;
+	cout << "s_x_prec     = " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x[1]->GetParError(2) << endl;
+	cout << "s_x_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_x_E[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x_E[1]->GetParError(2) << endl;
+	cout << "s_x_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_x_W[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_x_W[1]->GetParError(2) << endl;
+	cout << "s_x_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_x[1]->GetParError(2) << endl;
+	cout << "s_x_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_x[1]->GetParError(2) << endl << endl;
 
-	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(2) << endl;
-	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[1]->GetParameter(2) << endl;
-	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[1]->GetParameter(2) << endl;
-	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[1]->GetParameter(2) << endl;
-	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[1]->GetParameter(2) << endl << endl;
+	cout << "s_x_lof     = " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x[1]->GetParError(2) << endl;
+	cout << "s_x_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_x_E[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x_E[1]->GetParError(2) << endl;
+	cout << "s_x_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_x_W[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_x_W[1]->GetParError(2) << endl;
+	cout << "s_x_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_diff_lof_x[1]->GetParError(2) << endl;
+	cout << "s_x_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_x[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_synth_x[1]->GetParError(2) << endl << endl;
+
+	cout << "s_y_prec     = " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y[1]->GetParError(2) << endl;
+	cout << "s_y_prec_E   = " << 10000 * f_gauss_fits_vtx_prec_y_E[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y_E[1]->GetParError(2) << endl;
+	cout << "s_y_prec_W   = " << 10000 * f_gauss_fits_vtx_prec_y_W[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_y_W[1]->GetParError(2) << endl;
+	cout << "s_y_prec_E-W = " << 10000 * f_gauss_fits_diff_prec_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_y[1]->GetParError(2) << endl;
+	cout << "s_y_prec_Syn = " << 10000 * f_gauss_fits_vtx_prec_synth_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_prec_synth_y[1]->GetParError(2) << endl << endl;
+
+	cout << "s_y_lof     = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParError(2) << endl;
+	cout << "s_y_lof_E   = " << 10000 * f_gauss_fits_vtx_lof_y_E[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y_E[1]->GetParError(2) << endl;
+	cout << "s_y_lof_W   = " << 10000 * f_gauss_fits_vtx_lof_y_W[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_y_W[1]->GetParError(2) << endl;
+	cout << "s_y_lof_E-W = " << 10000 * f_gauss_fits_diff_lof_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_diff_lof_y[1]->GetParError(2) << endl;
+	cout << "s_y_lof_Syn = " << 10000 * f_gauss_fits_vtx_lof_synth_y[1]->GetParameter(2) << " +/- " << 10000 * f_gauss_fits_vtx_lof_synth_y[1]->GetParError(2) << endl << endl;
 
 	cout << "BS_x_prec        = " << 10000 * bspt_prec[0][1] << endl;
 	cout << "BS_y_prec        = " << 10000 * bspt_prec[1][1] << endl;
