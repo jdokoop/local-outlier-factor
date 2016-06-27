@@ -11,22 +11,19 @@ TH1F *h_resol;
 TH1F *h_beam;
 
 //Vertexing resolution
-const float SIGMA_RES_X = 3.0;
-const float SIGMA_RES_Y = 3.0;
+const float SIGMA_RES_X = 201.6;
+const float SIGMA_RES_Y = 156.9;
 
 //Beam spot spread
-const float SIGMA_BEAM_X = 3.0;
-const float SIGMA_BEAM_Y = 3.0;
+const float SIGMA_BEAM_X = 131.8;
+const float SIGMA_BEAM_Y = 114.6;
 
 //Beam spot spread
-const float BEAM_CTR_X = 0.0;
-const float BEAM_CTR_Y = 0.0;
+const float BEAM_CTR_X = 1612.0;
+const float BEAM_CTR_Y = 723.0;
 
 //Number of events to simulate
-const int NPOINTS = 500000;
-
-//Number of times the vertex falls outside of the beam spot
-int nPointsOut = 0;
+const int NPOINTS = 1e6;
 
 //Distribution of true vertices
 TH1F *hTrueVertexX;
@@ -60,10 +57,10 @@ void plot()
 	hRecoVertexX->Scale(1.0 / hRecoVertexX->GetMaximum());
 	hTrueVertexX->Scale(1.0 / hTrueVertexX->GetMaximum());
 	hRecoVertexX->SetTitle("");
-	hRecoVertexX->GetXaxis()->SetTitle("x [#mum]");
+	hRecoVertexX->GetXaxis()->SetTitle("x-vertex [#mum]");
 	hRecoVertexX->GetXaxis()->SetTitleFont(62);
 	hRecoVertexX->GetXaxis()->SetLabelFont(62);
-	hRecoVertexX->GetYaxis()->SetTitle("Counts");
+	hRecoVertexX->GetYaxis()->SetTitle("AU [max. norm.]");
 	hRecoVertexX->GetYaxis()->SetTitleFont(62);
 	hRecoVertexX->GetYaxis()->SetLabelFont(62);
 	hTrueVertexX->SetLineColor(kRed);
@@ -81,10 +78,10 @@ void plot()
 	hRecoVertexY->Scale(1.0 / hRecoVertexY->GetMaximum());
 	hTrueVertexY->Scale(1.0 / hTrueVertexY->GetMaximum());
 	hRecoVertexY->SetTitle("");
-	hRecoVertexY->GetXaxis()->SetTitle("y [#mum]");
+	hRecoVertexY->GetXaxis()->SetTitle("y-vertex [#mum]");
 	hRecoVertexY->GetXaxis()->SetTitleFont(62);
 	hRecoVertexY->GetXaxis()->SetLabelFont(62);
-	hRecoVertexY->GetYaxis()->SetTitle("Counts");
+	hRecoVertexY->GetYaxis()->SetTitle("AU [max. norm.]");
 	hRecoVertexY->GetYaxis()->SetTitleFont(62);
 	hRecoVertexY->GetYaxis()->SetLabelFont(62);
 	hTrueVertexY->SetLineColor(kRed);
@@ -92,15 +89,18 @@ void plot()
 	hTrueVertexY->Draw("same");
 
 	TCanvas *cResiduals = new TCanvas("cResiduals", "cResiduals", 600, 400);
+	hResTrueReco->Scale(1.0/hResTrueReco->Integral());
+	hResTrueBeamCenter->Scale(1.0/hResTrueBeamCenter->Integral());
 	cResiduals->SetLeftMargin(0.2);
 	hResTrueReco->SetTitle("");
 	hResTrueReco->GetXaxis()->SetTitle("Distance [#mum]");
 	hResTrueReco->GetXaxis()->SetTitleFont(62);
 	hResTrueReco->GetXaxis()->SetLabelFont(62);
-	hResTrueReco->GetYaxis()->SetTitle("Counts");
-	hResTrueReco->GetYaxis()->SetTitleOffset(2.1);
+	hResTrueReco->GetYaxis()->SetTitle("Probability");
+	hResTrueReco->GetYaxis()->SetTitleOffset(1.8);
 	hResTrueReco->GetYaxis()->SetTitleFont(62);
 	hResTrueReco->GetYaxis()->SetLabelFont(62);
+	hResTrueReco->GetYaxis()->SetRangeUser(0, hResTrueBeamCenter->GetMaximum() + 0.1*hResTrueBeamCenter->GetMaximum());
 	hResTrueReco->SetLineColor(kBlue);
 	hResTrueReco->Draw();
 	hResTrueBeamCenter->SetLineColor(kRed);
@@ -112,31 +112,36 @@ void plot()
 	tlResiduals->SetLineColor(kWhite);
 	tlResiduals->SetTextSize(0.05);
 	tlResiduals->Draw("same");
-}
 
-/*
- * Determine whether a point with coordinates x,y
- * is contained within the ellipse of the beam spot
- */
-bool isOutsideBeamSpot(float x, float y)
-{
-	if (x > SIGMA_BEAM_X && y > SIGMA_BEAM_Y)
-	{
-		return true;
-	}
+	float areaBelow200BC = hResTrueBeamCenter->Integral(1, hResTrueBeamCenter->FindBin(200.0)) / hResTrueBeamCenter->Integral();
+	float areaBelow200Reco = hResTrueReco->Integral(1, hResTrueReco->FindBin(200.0)) / hResTrueReco->Integral();
 
-	return false;
+	TLatex *tlatAreaBC = new TLatex(0.6, 0.4, Form("Area Below 200 = %.3g", areaBelow200BC));
+	tlatAreaBC->SetTextColor(kRed);
+	tlatAreaBC->SetTextSize(0.035);
+	tlatAreaBC->SetNDC(kTRUE);
+	tlatAreaBC->Draw("same");
+
+	TLatex *tlatAreaReco = new TLatex(0.6, 0.35, Form("Area Below 200 = %.3g", areaBelow200Reco));
+	tlatAreaReco->SetTextColor(kBlue);
+	tlatAreaReco->SetTextSize(0.035);
+	tlatAreaReco->SetNDC(kTRUE);
+	tlatAreaReco->Draw("same");
+
+	TLine *tline200 = new TLine(200, 0, 200, hResTrueBeamCenter->GetMaximum() + 0.1*hResTrueBeamCenter->GetMaximum());
+	tline200->SetLineStyle(2);
+	tline200->Draw("same");
 }
 
 void MonteCarloResolution()
 {
 	//Initialize variables
-	hResTrueReco       = new TH1F("hResTrueReco", "hResTrueReco", 100, 0, 50);
-	hResTrueBeamCenter = new TH1F("hResTrueBeamCenter", "hResTrueBeamCenter", 100, 0, 50);
-	hRecoVertexX       = new TH1F("hRecoVertexX", "hRecoVertexX", 100, -20, 20);
-	hRecoVertexY       = new TH1F("hRecoVertexY", "hRecoVertexY", 100, -20, 20);
-	hTrueVertexX       = new TH1F("hTrueVertexX", "hTrueVertexX", 100, -20, 20);
-	hTrueVertexY       = new TH1F("hTrueVertexY", "hTrueVertexY", 100, -20, 20);
+	hResTrueReco       = new TH1F("hResTrueReco", "hResTrueReco", 200, 0, 700);
+	hResTrueBeamCenter = new TH1F("hResTrueBeamCenter", "hResTrueBeamCenter", 200, 0, 700);
+	hRecoVertexX       = new TH1F("hRecoVertexX", "hRecoVertexX", 150, BEAM_CTR_X - 5 * SIGMA_BEAM_X, BEAM_CTR_X + 5 * SIGMA_BEAM_X);
+	hRecoVertexY       = new TH1F("hRecoVertexY", "hRecoVertexY", 150, BEAM_CTR_Y - 5 * SIGMA_BEAM_Y, BEAM_CTR_Y + 5 * SIGMA_BEAM_Y);
+	hTrueVertexX       = new TH1F("hTrueVertexX", "hTrueVertexX", 150, BEAM_CTR_X - 5 * SIGMA_BEAM_X, BEAM_CTR_X + 5 * SIGMA_BEAM_X);
+	hTrueVertexY       = new TH1F("hTrueVertexY", "hTrueVertexY", 150, BEAM_CTR_Y - 5 * SIGMA_BEAM_Y, BEAM_CTR_Y + 5 * SIGMA_BEAM_Y);
 
 	TRandom rndm(0);
 
@@ -156,9 +161,6 @@ void MonteCarloResolution()
 
 		hTrueVertexX->Fill(vtx_true_x);
 		hTrueVertexY->Fill(vtx_true_y);
-
-		//Determine if the reconstructed vertex falls outside the beam spot
-		if (isOutsideBeamSpot(vtx_reco_x, vtx_reco_y)) nPointsOut++;
 
 		//Determine the difference between the reconstructed and true vertices
 		float resTrueReco = TMath::Sqrt(pow(vtx_true_x - vtx_reco_x, 2) + pow(vtx_true_y - vtx_reco_y, 2));
