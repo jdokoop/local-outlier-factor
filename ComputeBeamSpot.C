@@ -148,11 +148,11 @@ void calculateResolution()
 		float err_lof_y      = f_gauss_fits_vtx_lof_y[i]->GetParError(2);
 
 		//Calculation
-		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i] * bspt_prec[0][i]);
-		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i] * bspt_prec[1][i]);
-
 		bspt_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2));
 		bspt_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2));
+
+		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i] * bspt_prec[0][i]);
+		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i] * bspt_prec[1][i]);
 
 		bspt_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * err_synth_prec_x, 2) + pow(2 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * err_diff_prec_x, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_prec_x[i]->GetParameter(2), 2)));
 		bspt_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * err_synth_prec_y, 2) + pow(2 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * err_diff_prec_y, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_prec_y[i]->GetParameter(2), 2)));
@@ -160,17 +160,24 @@ void calculateResolution()
 		resol_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * err_prec_x, 2) + pow(2 * bspt_prec[0][i] * bspt_prec_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2), 2) + pow(bspt_prec[0][i], 2)));
 		resol_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * err_prec_y, 2) + pow(2 * bspt_prec[1][i] * bspt_prec_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2), 2) + pow(bspt_prec[1][i], 2)));
 
-		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i] * bspt_lof[0][i]);
-		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i] * bspt_lof[1][i]);
+		cout << "---- Bspt Prec Err x_" << i << " = " << 10000 * bspt_prec_err[0][i] << endl;
+		cout << "---- Bspt Prec Err y_" << i << " = " << 10000 * bspt_prec_err[1][i] << endl;
 
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
+
+		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i] * bspt_lof[0][i]);
+		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i] * bspt_lof[1][i]);
 
 		bspt_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * err_synth_lof_x, 2) + pow(2 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * err_diff_lof_x, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_lof_x[i]->GetParameter(2), 2)));
 		bspt_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * err_synth_lof_y, 2) + pow(2 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * err_diff_lof_y, 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2), 2) + pow(f_gauss_fits_diff_lof_y[i]->GetParameter(2), 2)));
 
 		resol_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * err_lof_x, 2) + pow(2 * bspt_lof[0][i] * bspt_lof_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2), 2) + pow(bspt_lof[0][i], 2)));
 		resol_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * err_lof_y, 2) + pow(2 * bspt_lof[1][i] * bspt_lof_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2), 2) + pow(bspt_lof[1][i], 2)));
+
+		cout << "---- Resol LOF Err x_" << i << " = " << 10000 * resol_lof_err[0][i] << endl;
+		cout << "---- Resol LOF Err y_" << i << " = " << 10000 * resol_lof_err[1][i] << endl;
+
 	}
 }
 
@@ -330,15 +337,15 @@ void fitHistograms()
 	double r1, r2;
 	double p0, p1, p2;
 
-	double vertexRMS = 1.4;
-	double vertexDiffRMS = 1.4;
+	double vertexRMS = 1.5;
+	double vertexDiffRMS = 1.5;
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
 		if (NUMSEG == 2 || NUMSEG == 3)
 		{
-			vertexRMS = 1.4;
-			vertexDiffRMS = 1.4;
+			vertexRMS = 1.5;
+			vertexDiffRMS = 1.5;
 		}
 
 		// --> Precise X
