@@ -18,9 +18,10 @@ using namespace std;
 //----------------------------------
 
 //Number of tracks
-const int NUMSEG = 4;
-string nseg_cuts_lof[4] = {"nvtxtrk_lof_e==nvtxtrk_lof_e && nvtxtrk_lof_w==nvtxtrk_lof_w", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
-string nseg_cuts_prec[4] = {"nvtxtrk_prec_e==nvtxtrk_prec_e && nvtxtrk_prec_w==nvtxtrk_prec_w", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
+const int NUMSEG = 8;
+string nseg_cuts_lof[NUMSEG] = {"nvtxtrk_lof_e==nvtxtrk_lof_e && nvtxtrk_lof_w==nvtxtrk_lof_w", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 4","nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
+string nseg_cuts_prec[NUMSEG] = {"nvtxtrk_prec_e==nvtxtrk_prec_e && nvtxtrk_prec_w==nvtxtrk_prec_w", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 4","nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
+string bin_label[NUMSEG] = {"ANY", "2x2", "2x3", "3x2", "3x3", "3x4", "4x3", "4x4"};
 
 //Tree read in from file
 TTree *ntp_svxseg;
@@ -963,9 +964,19 @@ void readHistograms()
 
 void plotResolution()
 {
-	float x[NUMSEG] = {1, 2, 3, 4};
-	float x_aux[NUMSEG - 1] = {2, 3, 4};
+	float x[NUMSEG];
+	float x_aux[NUMSEG - 1];
 	float err_x[NUMSEG] = {0};
+
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		x[i] = i + 1;
+
+		if (i > 0)
+		{
+			x_aux[i - 1] = i + 1;
+		}
+	}
 
 	float resol_prec_x[NUMSEG];
 	float resol_prec_y[NUMSEG];
@@ -1047,15 +1058,12 @@ void plotResolution()
 	g_resol_prec_x_aux->SetMarkerColor(kBlack);
 	g_resol_prec_x_aux->Draw("LP,same");
 
-	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(1), "ANY");
-	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(2), "2");
-	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(3), "3");
-	g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(4), "4");
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		g_resol_prec_x->GetXaxis()->SetBinLabel(g_resol_prec_x->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
+		g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
 
-	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(1), "ANY");
-	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(2), "2");
-	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(3), "3");
-	g_resol_prec_y->GetXaxis()->SetBinLabel(g_resol_prec_y->GetXaxis()->FindBin(4), "4");
+	}
 
 	TLegend *tlg_resol_prec = new TLegend(0.6, 0.2, 0.85, 0.3);
 	tlg_resol_prec->AddEntry(g_resol_prec_x, "X-Vertex", "LP");
@@ -1096,25 +1104,32 @@ void plotResolution()
 	g_resol_lof_x_aux->SetMarkerColor(kBlack);
 	g_resol_lof_x_aux->Draw("LP,same");
 
-	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(1), "ANY");
-	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(2), "2");
-	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(3), "3");
-	g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(4), "4");
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		g_resol_lof_x->GetXaxis()->SetBinLabel(g_resol_lof_x->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
+		g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
 
-	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(1), "ANY");
-	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(2), "2");
-	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(3), "3");
-	g_resol_lof_y->GetXaxis()->SetBinLabel(g_resol_lof_y->GetXaxis()->FindBin(4), "4");
+	}
 
 	tlineDivAny->Draw("same");
 }
 
 void plotBeamSpot()
 {
-	float x[NUMSEG] = {1, 2, 3, 4};
-	float x_aux[NUMSEG - 1] = {2, 3, 4};
+	float x[NUMSEG];
+	float x_aux[NUMSEG - 1];
 
 	float err_x[NUMSEG] = {0};
+
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		x[i] = i + 1;
+
+		if (i > 0)
+		{
+			x_aux[i - 1] = i + 1;
+		}
+	}
 
 	float bspt_prec_x[NUMSEG];
 	float bspt_prec_y[NUMSEG];
@@ -1199,15 +1214,12 @@ void plotBeamSpot()
 	g_bspt_prec_x_aux->SetMarkerColor(kBlack);
 	g_bspt_prec_x_aux->Draw("LP,same");
 
-	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(1), "ANY");
-	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(2), "2");
-	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(3), "3");
-	g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(4), "4");
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		g_bspt_prec_x->GetXaxis()->SetBinLabel(g_bspt_prec_x->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
+		g_bspt_prec_y->GetXaxis()->SetBinLabel(g_bspt_prec_y->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
 
-	g_bspt_prec_y->GetXaxis()->SetBinLabel(g_bspt_prec_y->GetXaxis()->FindBin(1), "ANY");
-	g_bspt_prec_y->GetXaxis()->SetBinLabel(g_bspt_prec_y->GetXaxis()->FindBin(2), "2");
-	g_bspt_prec_y->GetXaxis()->SetBinLabel(g_bspt_prec_y->GetXaxis()->FindBin(3), "3");
-	g_bspt_prec_y->GetXaxis()->SetBinLabel(g_bspt_prec_y->GetXaxis()->FindBin(4), "4");
+	}
 
 	TLegend *tlg_bspt_prec = new TLegend(0.6, 0.2, 0.85, 0.3);
 	tlg_bspt_prec->AddEntry(g_bspt_prec_x, "X-Vertex", "LP");
@@ -1248,15 +1260,11 @@ void plotBeamSpot()
 	g_bspt_lof_x_aux->SetMarkerColor(kBlack);
 	g_bspt_lof_x_aux->Draw("LP,same");
 
-	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(1), "ANY");
-	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(2), "2");
-	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(3), "3");
-	g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(4), "4");
-
-	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(1), "ANY");
-	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(2), "2");
-	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(3), "3");
-	g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(4), "4");
+	for (int i = 0; i < NUMSEG; i++)
+	{
+		g_bspt_lof_x->GetXaxis()->SetBinLabel(g_bspt_lof_x->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
+		g_bspt_lof_y->GetXaxis()->SetBinLabel(g_bspt_lof_y->GetXaxis()->FindBin(i + 1), bin_label[i].c_str());
+	}
 
 	tlineDivAny->Draw("same");
 }
