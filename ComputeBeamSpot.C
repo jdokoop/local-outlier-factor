@@ -29,6 +29,10 @@ string bin_label[NUMSEG] = {"ANY", "2x2", "2x3", "3x2", "3x3", "3x4", "4x3", "4x
 //Tree read in from file
 TTree *ntp_svxseg;
 
+//Relative frequency of events with different number of total tracks
+float eventTrackFrequency[NUMTRACKS];
+TGraphErrors *g_track_frequency;
+
 //Distribution of vertices from the iterative algorithm
 TH1F *h_prec_x[NUMSEG];
 TH1F *h_prec_y[NUMSEG];
@@ -1533,6 +1537,32 @@ void calculateTotalResolution()
 	g_resol_lof_total_y = new TGraphErrors(NUMTRACKS, trackVals, resol_lof_total_y);
 }
 
+void plotTrackFrequency()
+{
+	float trackVals[NUMTRACKS];
+
+	for(int i=0; i<NUMTRACKS; i++)
+	{
+		trackVals[i] = i;
+		eventTrackFrequency[i] = (float) ntp_svxseg->GetEntries(Form("nvtxtrk_prec == %i",i)) / ntp_svxseg->GetEntries();
+	}
+
+	g_track_frequency = new TGraphErrors(NUMTRACKS, trackVals, eventTrackFrequency);
+
+	TCanvas *cTrackFrequency = new TCanvas("cTrackFrequency", "cTrackFrequency", 600, 600);
+	g_track_frequency->SetTitle("");
+	g_track_frequency->SetMarkerStyle(20);
+	g_track_frequency->GetXaxis()->SetTitle("Total Vertex Tracks");
+	g_track_frequency->GetXaxis()->SetTitleFont(62);
+	g_track_frequency->GetXaxis()->SetLabelFont(62);
+	g_track_frequency->GetYaxis()->SetTitle("Fraction of Events");
+	g_track_frequency->GetYaxis()->SetTitleOffset(1.85);
+	g_track_frequency->GetYaxis()->SetRangeUser(0, 0.025);
+	g_track_frequency->GetYaxis()->SetTitleFont(62);
+	g_track_frequency->GetYaxis()->SetLabelFont(62);
+	g_track_frequency->Draw("ALP");
+}
+
 void printParameters()
 {
 	//With no track requirement
@@ -1644,5 +1674,6 @@ void ComputeBeamSpot()
 	plotHistograms();             //Plot gaussian histograms and fits
 	plotResolution();             //Plot resolution for E/W track combinations
 	plotBeamSpot();               //Plot beam spread for E/W track combinations
+	plotTrackFrequency();
 	//printParameters();
 }
