@@ -17,10 +17,13 @@ using namespace std;
 // Variables
 //----------------------------------
 
-//Number of tracks
+//Number of E/W track combinations
 const int NUMSEG = 8;
-string nseg_cuts_lof[NUMSEG] = {"nvtxtrk_lof_e==nvtxtrk_lof_e && nvtxtrk_lof_w==nvtxtrk_lof_w", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 4","nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
-string nseg_cuts_prec[NUMSEG] = {"nvtxtrk_prec_e==nvtxtrk_prec_e && nvtxtrk_prec_w==nvtxtrk_prec_w", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 4","nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
+//Number of total vertex tracks
+const int NUMTRACKS = 7;
+
+string nseg_cuts_lof[NUMSEG] = {"nvtxtrk_lof_e==nvtxtrk_lof_e && nvtxtrk_lof_w==nvtxtrk_lof_w", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 4", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
+string nseg_cuts_prec[NUMSEG] = {"nvtxtrk_prec_e==nvtxtrk_prec_e && nvtxtrk_prec_w==nvtxtrk_prec_w", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 4", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
 string bin_label[NUMSEG] = {"ANY", "2x2", "2x3", "3x2", "3x3", "3x4", "4x3", "4x4"};
 
 //Tree read in from file
@@ -68,6 +71,9 @@ TH1F *h_ew_lof_z[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_x[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_y[NUMSEG];
 
+TF1 *f_gauss_fits_vtx_prec_total_x[NUMSEG];
+TF1 *f_gauss_fits_vtx_prec_total_y[NUMSEG];
+
 TF1 *f_gauss_fits_vtx_prec_x_E[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_x_W[NUMSEG];
 TF1 *f_gauss_fits_vtx_prec_y_E[NUMSEG];
@@ -108,6 +114,8 @@ TGraph *g_resol_prec_x_aux;
 TGraph *g_resol_prec_y_aux;
 TGraph *g_bspt_prec_x_aux;
 TGraph *g_bspt_prec_y_aux;
+TGraphErrors *g_bspt_prec_x_2;
+TGraphErrors *g_bspt_prec_y_2;
 
 //Beam spot size
 float bspt_lof[2][NUMSEG] = {0};
@@ -122,6 +130,23 @@ TGraph *g_resol_lof_x_aux;
 TGraph *g_resol_lof_y_aux;
 TGraph *g_bspt_lof_x_aux;
 TGraph *g_bspt_lof_y_aux;
+TGraphErrors *g_bspt_lof_x_2;
+TGraphErrors *g_bspt_lof_y_2;
+
+//Beam spot size via another independent equation
+float bspt_lof_2[2][NUMSEG] = {0};
+float bspt_prec_2[2][NUMSEG] = {0};
+
+//Precise vertex distributions as a function of the total number of tracks
+TH1F *h_prec_total_x[NUMTRACKS];
+TH1F *h_prec_total_y[NUMTRACKS];
+
+//Resolution as a function of the total number of vertex tracks per event
+float resol_prec_total_x[NUMTRACKS];
+float resol_prec_total_y[NUMTRACKS];
+
+TGraphErrors *g_resol_prec_total_x;
+TGraphErrors *g_resol_prec_total_y;
 
 //----------------------------------
 // Functions
@@ -152,6 +177,9 @@ void calculateResolution()
 		bspt_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2));
 		bspt_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2));
 
+		bspt_prec_2[0][i] = TMath::Sqrt(0.5 * (f_gauss_fits_vtx_prec_x_E[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x_E[i]->GetParameter(2) + f_gauss_fits_vtx_prec_x_W[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x_W[i]->GetParameter(2) - f_gauss_fits_diff_prec_x[i]->GetParameter(2) * f_gauss_fits_diff_prec_x[i]->GetParameter(2)));
+		bspt_prec_2[1][i] = TMath::Sqrt(0.5 * (f_gauss_fits_vtx_prec_y_E[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y_E[i]->GetParameter(2) + f_gauss_fits_vtx_prec_y_W[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y_W[i]->GetParameter(2) - f_gauss_fits_diff_prec_y[i]->GetParameter(2) * f_gauss_fits_diff_prec_y[i]->GetParameter(2)));
+
 		resol_prec[0][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * f_gauss_fits_vtx_prec_x[i]->GetParameter(2) - bspt_prec[0][i] * bspt_prec[0][i]);
 		resol_prec[1][i] = TMath::Sqrt(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * f_gauss_fits_vtx_prec_y[i]->GetParameter(2) - bspt_prec[1][i] * bspt_prec[1][i]);
 
@@ -161,11 +189,14 @@ void calculateResolution()
 		resol_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * err_prec_x, 2) + pow(2 * bspt_prec[0][i] * bspt_prec_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2), 2) + pow(bspt_prec[0][i], 2)));
 		resol_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * err_prec_y, 2) + pow(2 * bspt_prec[1][i] * bspt_prec_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2), 2) + pow(bspt_prec[1][i], 2)));
 
-		cout << "---- Bspt Prec Err x_" << i << " = " << 10000 * bspt_prec_err[0][i] << endl;
-		cout << "---- Bspt Prec Err y_" << i << " = " << 10000 * bspt_prec_err[1][i] << endl;
+		cout << "---- Bspt Prec Err x_" << i << " = " << 10000 * bspt_prec_2[0][i] << endl;
+		cout << "---- Bspt Prec Err y_" << i << " = " << 10000 * bspt_prec_2[1][i] << endl;
 
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
+
+		bspt_lof_2[0][i] = TMath::Sqrt(0.5 * (f_gauss_fits_vtx_lof_x_E[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x_E[i]->GetParameter(2) + f_gauss_fits_vtx_lof_x_W[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x_W[i]->GetParameter(2) - f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2)));
+		bspt_lof_2[1][i] = TMath::Sqrt(0.5 * (f_gauss_fits_vtx_lof_y_E[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y_E[i]->GetParameter(2) + f_gauss_fits_vtx_lof_y_W[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y_W[i]->GetParameter(2) - f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2)));
 
 		resol_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_x[i]->GetParameter(2) - bspt_lof[0][i] * bspt_lof[0][i]);
 		resol_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_y[i]->GetParameter(2) - bspt_lof[1][i] * bspt_lof[1][i]);
@@ -176,9 +207,8 @@ void calculateResolution()
 		resol_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * err_lof_x, 2) + pow(2 * bspt_lof[0][i] * bspt_lof_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2), 2) + pow(bspt_lof[0][i], 2)));
 		resol_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * err_lof_y, 2) + pow(2 * bspt_lof[1][i] * bspt_lof_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2), 2) + pow(bspt_lof[1][i], 2)));
 
-		cout << "---- Resol LOF Err x_" << i << " = " << 10000 * resol_lof_err[0][i] << endl;
-		cout << "---- Resol LOF Err y_" << i << " = " << 10000 * resol_lof_err[1][i] << endl;
-
+		cout << "---- Resol LOF Err x_" << i << " = " << 10000 * bspt_lof_2[0][i] << endl;
+		cout << "---- Resol LOF Err y_" << i << " = " << 10000 * bspt_lof_2[1][i] << endl;
 	}
 }
 
@@ -340,6 +370,56 @@ void fitHistograms()
 
 	double vertexRMS = 1.5;
 	double vertexDiffRMS = 1.5;
+
+	for (int i = 0; i < NUMTRACKS; i++)
+	{
+		// --> Precise Total X
+		p0 = h_prec_total_x[i]->GetMaximum();
+		p1 = h_prec_total_x[i]->GetMean();
+		p2 = vertexRMS * h_prec_total_x[i]->GetRMS();
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_total_x[i] = new TF1(Form("f_prec_total_x_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_total_x[i]->SetParameters(p0, p1, p2);
+
+		h_prec_total_x[i]->Fit(Form("f_prec_total_x_%i", i), "Q0R");
+
+		p0 = f_gauss_fits_vtx_prec_total_x[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_total_x[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_total_x[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_total_x[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_total_x[i]->SetRange(r1, r2);
+		h_prec_total_x[i]->Fit(Form("f_prec_total_x_%i", i), "Q0R");
+
+		// --> Precise Total Y
+		p0 = h_prec_total_y[i]->GetMaximum();
+		p1 = h_prec_total_y[i]->GetMean();
+		p2 = vertexRMS * h_prec_total_y[i]->GetRMS();
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_total_y[i] = new TF1(Form("f_prec_total_y_%i", i), "gaus", r1, r2);
+		f_gauss_fits_vtx_prec_total_y[i]->SetParameters(p0, p1, p2);
+
+		h_prec_total_y[i]->Fit(Form("f_prec_total_y_%i", i), "Q0R");
+
+		p0 = f_gauss_fits_vtx_prec_total_y[i]->GetParameter(0);
+		p1 = f_gauss_fits_vtx_prec_total_y[i]->GetParameter(1);
+		p2 = vertexRMS * f_gauss_fits_vtx_prec_total_y[i]->GetParameter(2);
+
+		r1 = p1 - p2;
+		r2 = p1 + p2;
+
+		f_gauss_fits_vtx_prec_total_y[i]->SetParameters(p0, p1, p2);
+		f_gauss_fits_vtx_prec_total_y[i]->SetRange(r1, r2);
+		h_prec_total_y[i]->Fit(Form("f_prec_total_y_%i", i), "Q0R");
+	}
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
@@ -882,7 +962,16 @@ void fitHistograms()
 void readHistograms()
 {
 	TFile *fin = new TFile("Data/423844_data_narrowvtx_ew.root");
-	ntp_svxseg = (TTree*) fin->Get("ntp_svxseg");
+	ntp_svxseg = (TTree*) fin->Get("ntp_event");
+
+	for (int i = 0; i < NUMTRACKS; i++)
+	{
+		ntp_svxseg->Draw(Form("vtx_prec[0]>>h_prec_total_x_%i(150,-0.05,0.3)", i), Form("nvtxtrk_prec == %i", i + 2), "goff");
+		h_prec_total_x[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_total_x_%i", i));
+
+		ntp_svxseg->Draw(Form("vtx_prec[1]>>h_prec_total_y_%i(150,-0.05,0.3)", i), Form("nvtxtrk_prec == %i", i + 2), "goff");
+		h_prec_total_y[i] = (TH1F*) gDirectory->FindObject(Form("h_prec_total_y_%i", i));
+	}
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
@@ -1112,6 +1201,40 @@ void plotResolution()
 	}
 
 	tlineDivAny->Draw("same");
+
+	//Plot resolution as a function of the total number of tracks with a fixed beam spread
+	TCanvas *cTotalResolution = new TCanvas("cTotalResolution", "cTotalResolution", 900, 500);
+	cTotalResolution->Divide(2, 1);
+
+	cTotalResolution->cd(1);
+	g_resol_prec_total_x->SetTitle("");
+	g_resol_prec_total_x->SetMarkerStyle(20);
+	g_resol_prec_total_x->SetMarkerColor(kRed);
+	g_resol_prec_total_x->SetLineColor(kRed);
+	g_resol_prec_total_x->GetXaxis()->SetTitle("Total Vertex Tracks");
+	g_resol_prec_total_x->GetXaxis()->SetTitleFont(62);
+	g_resol_prec_total_x->GetXaxis()->SetLabelFont(62);
+	g_resol_prec_total_x->GetYaxis()->SetTitle("#sigma_{res,x} [cm]");
+	g_resol_prec_total_x->GetYaxis()->SetTitleOffset(1.85);
+	g_resol_prec_total_x->GetYaxis()->SetRangeUser(0, 0.025);
+	g_resol_prec_total_x->GetYaxis()->SetTitleFont(62);
+	g_resol_prec_total_x->GetYaxis()->SetLabelFont(62);
+	g_resol_prec_total_x->Draw("AP");
+
+	cTotalResolution->cd(2);
+	g_resol_prec_total_y->SetTitle("");
+	g_resol_prec_total_y->SetMarkerStyle(20);
+	g_resol_prec_total_y->SetMarkerColor(kRed);
+	g_resol_prec_total_y->SetLineColor(kRed);
+	g_resol_prec_total_y->GetXaxis()->SetTitle("Total Vertex Tracks");
+	g_resol_prec_total_y->GetXaxis()->SetTitleFont(62);
+	g_resol_prec_total_y->GetXaxis()->SetLabelFont(62);
+	g_resol_prec_total_y->GetYaxis()->SetTitle("#sigma_{res,y} [cm]");
+	g_resol_prec_total_y->GetYaxis()->SetTitleOffset(1.85);
+	g_resol_prec_total_y->GetYaxis()->SetRangeUser(0, 0.025);
+	g_resol_prec_total_y->GetYaxis()->SetTitleFont(62);
+	g_resol_prec_total_y->GetYaxis()->SetLabelFont(62);
+	g_resol_prec_total_y->Draw("AP");
 }
 
 void plotBeamSpot()
@@ -1133,6 +1256,8 @@ void plotBeamSpot()
 
 	float bspt_prec_x[NUMSEG];
 	float bspt_prec_y[NUMSEG];
+	float bspt_prec_x_2[NUMSEG];
+	float bspt_prec_y_2[NUMSEG];
 	float bspt_prec_x_aux[NUMSEG - 1];
 	float bspt_prec_y_aux[NUMSEG - 1];
 
@@ -1141,6 +1266,8 @@ void plotBeamSpot()
 
 	float bspt_lof_x[NUMSEG];
 	float bspt_lof_y[NUMSEG];
+	float bspt_lof_x_2[NUMSEG];
+	float bspt_lof_y_2[NUMSEG];
 	float bspt_lof_x_aux[NUMSEG - 1];
 	float bspt_lof_y_aux[NUMSEG - 1];
 
@@ -1152,11 +1279,17 @@ void plotBeamSpot()
 		bspt_prec_x[i] = bspt_prec[0][i];
 		bspt_prec_y[i] = bspt_prec[1][i];
 
+		bspt_prec_x_2[i] = bspt_prec_2[0][i];
+		bspt_prec_y_2[i] = bspt_prec_2[1][i];
+
 		bspt_prec_er_x[i] = bspt_prec_err[0][i];
 		bspt_prec_er_y[i] = bspt_prec_err[1][i];
 
 		bspt_lof_x[i] = bspt_lof[0][i];
 		bspt_lof_y[i] = bspt_lof[1][i];
+
+		bspt_lof_x_2[i] = bspt_lof_2[0][i];
+		bspt_lof_y_2[i] = bspt_lof_2[1][i];
 
 		bspt_lof_er_x[i] = bspt_lof_err[0][i];
 		bspt_lof_er_y[i] = bspt_lof_err[1][i];
@@ -1174,8 +1307,14 @@ void plotBeamSpot()
 	g_bspt_prec_x = new TGraphErrors(NUMSEG, x, bspt_prec_x, err_x, bspt_prec_er_x);
 	g_bspt_prec_y = new TGraphErrors(NUMSEG, x, bspt_prec_y, err_x, bspt_prec_er_y);
 
+	g_bspt_prec_x_2 = new TGraphErrors(NUMSEG, x, bspt_prec_x_2);
+	g_bspt_prec_y_2 = new TGraphErrors(NUMSEG, x, bspt_prec_y_2);
+
 	g_bspt_lof_x = new TGraphErrors(NUMSEG, x, bspt_lof_x, err_x, bspt_lof_er_x);
 	g_bspt_lof_y = new TGraphErrors(NUMSEG, x, bspt_lof_y, err_x, bspt_lof_er_y);
+
+	g_bspt_lof_x_2 = new TGraphErrors(NUMSEG, x, bspt_lof_x_2);
+	g_bspt_lof_y_2 = new TGraphErrors(NUMSEG, x, bspt_lof_y_2);
 
 	g_bspt_prec_x_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_prec_x_aux);
 	g_bspt_prec_y_aux = new TGraphErrors(NUMSEG - 1, x_aux, bspt_prec_y_aux);
@@ -1199,20 +1338,28 @@ void plotBeamSpot()
 	g_bspt_prec_x->GetYaxis()->SetTitleFont(62);
 	g_bspt_prec_x->GetYaxis()->SetLabelFont(62);
 	g_bspt_prec_x->Draw("AP");
+
 	g_bspt_prec_y->SetMarkerStyle(20);
 	g_bspt_prec_y->SetLineColor(kBlue);
 	g_bspt_prec_y->SetMarkerColor(kBlue);
 	g_bspt_prec_y->Draw("P,same");
+
 	g_bspt_prec_y_aux->SetMarkerStyle(20);
 	g_bspt_prec_y_aux->SetLineStyle(2);
 	g_bspt_prec_y_aux->SetLineColor(kBlue);
 	g_bspt_prec_y_aux->SetMarkerColor(kBlue);
 	g_bspt_prec_y_aux->Draw("LP,same");
+
 	g_bspt_prec_x_aux->SetMarkerStyle(20);
 	g_bspt_prec_x_aux->SetLineStyle(2);
 	g_bspt_prec_x_aux->SetLineColor(kBlack);
 	g_bspt_prec_x_aux->SetMarkerColor(kBlack);
 	g_bspt_prec_x_aux->Draw("LP,same");
+
+	g_bspt_prec_x_2->SetTitle("");
+	g_bspt_prec_x_2->SetMarkerStyle(4);
+	g_bspt_prec_x_2->Draw("P,same");
+
 
 	for (int i = 0; i < NUMSEG; i++)
 	{
@@ -1239,7 +1386,7 @@ void plotBeamSpot()
 	g_bspt_lof_x->GetXaxis()->SetTitle("Number of Vertex Tracks in Each Arm");
 	g_bspt_lof_x->GetXaxis()->SetTitleFont(62);
 	g_bspt_lof_x->GetXaxis()->SetLabelFont(62);
-	g_bspt_lof_x->GetYaxis()->SetTitle("#sigma_{beam} [cm]");
+	g_bspt_lof_x->GetYaxis()->SetTitle("#sigma_{b} [cm]");
 	g_bspt_lof_x->GetYaxis()->SetTitleOffset(1.85);
 	g_bspt_lof_x->GetYaxis()->SetRangeUser(0, 0.025);
 	g_bspt_lof_x->GetYaxis()->SetTitleFont(62);
@@ -1267,6 +1414,28 @@ void plotBeamSpot()
 	}
 
 	tlineDivAny->Draw("same");
+}
+
+void calculateTotalResolution()
+{
+	//Pick a fixed beam spread corresponding to the no-track-cut selection
+	float sigmaBeamPrecX = bspt_prec[0][0];
+	float sigmaBeamPrecY = bspt_prec[1][0];
+	float trackVals[NUMTRACKS];
+
+	//Calculate the resolution as a function of the total number of tracks
+	for (int i = 0; i < NUMTRACKS; i++)
+	{
+		float s_x = f_gauss_fits_vtx_prec_total_x[i]->GetParameter(2);
+		float s_y = f_gauss_fits_vtx_prec_total_y[i]->GetParameter(2);
+		resol_prec_total_x[i] = TMath::Sqrt(s_x * s_x - sigmaBeamPrecX * sigmaBeamPrecX);
+		resol_prec_total_y[i] = TMath::Sqrt(s_y * s_y - sigmaBeamPrecY * sigmaBeamPrecY);
+
+		trackVals[i] = i + 2;
+	}
+
+	g_resol_prec_total_x = new TGraphErrors(NUMTRACKS, trackVals, resol_prec_total_x);
+	g_resol_prec_total_y = new TGraphErrors(NUMTRACKS, trackVals, resol_prec_total_y);
 }
 
 void printParameters()
@@ -1373,11 +1542,12 @@ void printParameters()
 
 void ComputeBeamSpot()
 {
-	readHistograms();
-	fitHistograms();
-	calculateResolution();
-	plotHistograms();
-	plotResolution();
-	plotBeamSpot();
-	printParameters();
+	readHistograms();             //Create histograms from TTree
+	fitHistograms();              //Fit histograms with a Gaussian
+	calculateResolution();        //Calculate the resolution and beam spot size for selected E/W track combinations
+	calculateTotalResolution();   //Calculate the resolution as a function of total number of beam tracks, with a fixed beam spread
+	plotHistograms();             //Plot gaussian histograms and fits
+	plotResolution();             //Plot resolution for E/W track combinations
+	plotBeamSpot();               //Plot beam spread for E/W track combinations
+	//printParameters();
 }
