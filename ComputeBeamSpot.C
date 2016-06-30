@@ -22,8 +22,8 @@ const int NUMSEG = 8;
 //Number of total vertex tracks
 const int NUMTRACKS = 7;
 
-string nseg_cuts_lof[NUMSEG] = {"nvtxtrk_lof_e==nvtxtrk_lof_e && nvtxtrk_lof_w==nvtxtrk_lof_w", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 4", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
-string nseg_cuts_prec[NUMSEG] = {"nvtxtrk_prec_e==nvtxtrk_prec_e && nvtxtrk_prec_w==nvtxtrk_prec_w", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 4", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
+string nseg_cuts_lof[NUMSEG] = {"nvtxtrk_lof_e>1 && nvtxtrk_lof_w>1", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 2 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 2", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 3 && nvtxtrk_lof_w == 4", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 3", "nvtxtrk_lof_e == 4 && nvtxtrk_lof_w == 4"};
+string nseg_cuts_prec[NUMSEG] = {"nvtxtrk_prec_e>1 && nvtxtrk_prec_w>1", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 2 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 2", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 3 && nvtxtrk_prec_w == 4", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 3", "nvtxtrk_prec_e == 4 && nvtxtrk_prec_w == 4"};
 string bin_label[NUMSEG] = {"ANY", "2x2", "2x3", "3x2", "3x3", "3x4", "4x3", "4x4"};
 
 //Tree read in from file
@@ -205,9 +205,6 @@ void calculateResolution()
 		resol_prec_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2) * err_prec_x, 2) + pow(2 * bspt_prec[0][i] * bspt_prec_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_x[i]->GetParameter(2), 2) + pow(bspt_prec[0][i], 2)));
 		resol_prec_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2) * err_prec_y, 2) + pow(2 * bspt_prec[1][i] * bspt_prec_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_prec_y[i]->GetParameter(2), 2) + pow(bspt_prec[1][i], 2)));
 
-		cout << "---- Bspt Prec Err x_" << i << " = " << 10000 * bspt_prec_2[0][i] << endl;
-		cout << "---- Bspt Prec Err y_" << i << " = " << 10000 * bspt_prec_2[1][i] << endl;
-
 		bspt_lof[0][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_x[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_x[i]->GetParameter(2) * f_gauss_fits_diff_lof_x[i]->GetParameter(2));
 		bspt_lof[1][i] = TMath::Sqrt(f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) * f_gauss_fits_vtx_lof_synth_y[i]->GetParameter(2) - 0.25 * f_gauss_fits_diff_lof_y[i]->GetParameter(2) * f_gauss_fits_diff_lof_y[i]->GetParameter(2));
 
@@ -222,9 +219,6 @@ void calculateResolution()
 
 		resol_lof_err[0][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2) * err_lof_x, 2) + pow(2 * bspt_lof[0][i] * bspt_lof_err[0][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_x[i]->GetParameter(2), 2) + pow(bspt_lof[0][i], 2)));
 		resol_lof_err[1][i] = TMath::Sqrt(pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2) * err_lof_y, 2) + pow(2 * bspt_lof[1][i] * bspt_lof_err[1][i], 2)) / TMath::Sqrt(2 * (pow(f_gauss_fits_vtx_lof_y[i]->GetParameter(2), 2) + pow(bspt_lof[1][i], 2)));
-
-		cout << "---- Resol LOF Err x_" << i << " = " << 10000 * bspt_lof_2[0][i] << endl;
-		cout << "---- Resol LOF Err y_" << i << " = " << 10000 * bspt_lof_2[1][i] << endl;
 	}
 }
 
@@ -1383,6 +1377,8 @@ void plotBeamSpot()
 		bspt_lof_er_x[i] = bspt_lof_err[0][i];
 		bspt_lof_er_y[i] = bspt_lof_err[1][i];
 
+		cout << "**** " <<  bspt_prec_er_x[i] << ", " << bspt_prec_er_y[i] << endl;
+
 		if (i > 0)
 		{
 			bspt_prec_x_aux[i - 1] = bspt_prec[0][i];
@@ -1543,8 +1539,8 @@ void plotTrackFrequency()
 
 	for(int i=0; i<NUMTRACKS; i++)
 	{
-		trackVals[i] = i;
-		eventTrackFrequency[i] = (float) ntp_svxseg->GetEntries(Form("nvtxtrk_prec == %i",i)) / ntp_svxseg->GetEntries();
+		trackVals[i] = i+2;
+		eventTrackFrequency[i] = (float) ntp_svxseg->GetEntries(Form("nvtxtrk_prec == %i",i+2)) / ntp_svxseg->GetEntries();
 	}
 
 	g_track_frequency = new TGraphErrors(NUMTRACKS, trackVals, eventTrackFrequency);
@@ -1665,6 +1661,18 @@ void printParameters()
 	cout << "BC_y_lof       = " << 10000 * f_gauss_fits_vtx_lof_y[1]->GetParameter(1) << endl << endl;
 }
 
+void savePlots()
+{
+	TFile *fout = new TFile("output_data.root","RECREATE");
+	g_track_frequency->SetName("g_track_frequency_prec");
+	g_resol_prec_total_x->SetName("g_resol_prec_total_x");
+	g_resol_prec_total_y->SetName("g_resol_prec_total_y");
+	g_track_frequency->Write();
+	g_resol_prec_total_x->Write();
+	g_resol_prec_total_y->Write();
+	fout->Close();
+}
+
 void ComputeBeamSpot()
 {
 	readHistograms();             //Create histograms from TTree
@@ -1675,5 +1683,6 @@ void ComputeBeamSpot()
 	plotResolution();             //Plot resolution for E/W track combinations
 	plotBeamSpot();               //Plot beam spread for E/W track combinations
 	plotTrackFrequency();
-	//printParameters();
+	printParameters();
+	savePlots();
 }
